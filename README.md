@@ -5,7 +5,7 @@ This repository provides a user-friendly interface for generating Slurm scripts 
 ## Live Demo
 To see the tool in action, visit our live demo:
 
-[UVA Slurm Script Generator](https://adameubanks.github.io/UVASlurmScriptGenerator/)
+[UVA Slurm Script Generator](https://uvarc.github.io/SlurmScriptGenerator/)
 
 ## About the Project
 The **UVA Slurm Script Generator** is inspired by the [BYU Job Script Generator](https://rc.byu.edu/documentation/slurm/script-generator) and aims to provide a similar interface for the UVA community. By automating the script creation process, users can focus more on their computational tasks rather than the intricacies of Slurm scripting.
