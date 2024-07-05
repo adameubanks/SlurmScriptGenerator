@@ -98,13 +98,13 @@ UVAScriptGen.prototype.newSpan = function() {
 	return newEl;
 };
 
-UVAScriptGen.prototype.newA = function(url, body) {
-	var a = document.createElement("a");
-	a.href = url;
-	a.appendChild(document.createTextNode(body));
-	a.target = "_base";
-	return a;
-}
+// UVAScriptGen.prototype.newA = function(url, body) {
+// 	var a = document.createElement("a");
+// 	a.href = url;
+// 	a.appendChild(document.createTextNode(body));
+// 	a.target = "_base";
+// 	return a;
+// }
 
 UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
 	var div = document.createElement("div");
@@ -158,10 +158,10 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		});
 		new_radio.partition_name = this.settings.partitions.names[i];
 		this.inputs.partitions.push(new_radio);
-		var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
+		// var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
 		var partition_container = this.newSpan(null);
 		partition_container.className = "uva_sg_input_partition_container";
-		var name_span = this.newSpan(null, this.settings.partitions.names[i], url);
+		var name_span = this.newSpan(null, this.settings.partitions.names[i]);
 		name_span.className = "uva_sg_input_partition_name";
 		partition_container.appendChild(new_radio);
 		partition_container.appendChild(name_span);
@@ -183,10 +183,10 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		});
 		new_radio.gres_name = this.settings.gres.names[i];
 		this.inputs.gres.push(new_radio);
-		var url = this.newA(this.settings.gres.info_base_url + this.settings.gres.names[i], "?");
+		// var url = this.newA(this.settings.gres.info_base_url + this.settings.gres.names[i], "?");
 		var gres_container = this.newSpan(null);
 		gres_container.className = "uva_sg_input_gres_container";
-		var name_span = this.newSpan(null, this.settings.gres.names[i], url);
+		var name_span = this.newSpan(null, this.settings.gres.names[i]);
 		name_span.className = "uva_sg_input_gres_name";
 		gres_container.appendChild(new_radio);
 		gres_container.appendChild(name_span);
@@ -208,10 +208,10 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		});
 		new_radio.constraint_name = this.settings.constraints.names[i];
 		this.inputs.constraint.push(new_radio);
-		var url = this.newA(this.settings.constraints.info_base_url + this.settings.constraints.names[i], "?");
+		// var url = this.newA(this.settings.constraints.info_base_url + this.settings.constraints.names[i], "?");
 		var constraint_container = this.newSpan(null);
 		constraint_container.className = "uva_sg_input_constraint_container";
-		var name_span = this.newSpan(null, this.settings.constraints.names[i], url);
+		var name_span = this.newSpan(null, this.settings.constraints.names[i]);
 		name_span.className = "uva_sg_input_constraint_name";
 		constraint_container.appendChild(new_radio);
 		constraint_container.appendChild(name_span);
@@ -407,6 +407,7 @@ UVAScriptGen.prototype.init = function() {
 	copyButton.id = "copyButton";
 	copyIcon = document.createElement("i");
 	copyIcon.className = "fa fa-copy";
+	copyIcon.color = "#454545";
 	copyButton.appendChild(copyIcon);
 	this.jobScriptDiv.appendChild(copyButton);
 
