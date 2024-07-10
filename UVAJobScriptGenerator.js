@@ -59,6 +59,12 @@ UVAScriptGen.prototype.newInput = function(args) {
 		newEl.value = args.value;
 	if(args.type)
 		newEl.type = args.type
+	if(args.min)
+		newEl.min = args.min;
+	if(args.max)
+		newEl.max = args.max;
+	if(args.class)
+		newEl.className = args.class;
 
 	newEl.onclick = newEl.onchange = function () {
 		tthis.updateJobscript();
@@ -98,14 +104,6 @@ UVAScriptGen.prototype.newSpan = function() {
 	return newEl;
 };
 
-// UVAScriptGen.prototype.newA = function(url, body) {
-// 	var a = document.createElement("a");
-// 	a.href = url;
-// 	a.appendChild(document.createTextNode(body));
-// 	a.target = "_base";
-// 	return a;
-// }
-
 UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
 	var div = document.createElement("div");
 	div.className = "input-pair";
@@ -126,25 +124,21 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(this.createLabelInputPair("Job name (optional): ", this.inputs.job_name));
 
 	// Number of Nodes
-	this.inputs.num_nodes = this.newInput({type: "number", value: 1, min: 1});
+	this.inputs.num_nodes = this.newInput({type: "number", value: 1, min: 1, class: "uva_sg_input_nodes"});
 	form.appendChild(this.createLabelInputPair("Number of nodes: ", this.inputs.num_nodes));
 
 	// Tasks per Node
-	this.inputs.tasks_per_node = this.newInput({type: "number", value: 1, min: 1});
+	this.inputs.tasks_per_node = this.newInput({type: "number", value: 1, min: 1, class: "uva_sg_input_tasks"});
 	form.appendChild(this.createLabelInputPair("Tasks per node: ", this.inputs.tasks_per_node));
 
 	// Number of CPUs
-	this.inputs.cpus_per_task = this.newInput({type: "number", value: 1, min: 1});
+	this.inputs.cpus_per_task = this.newInput({type: "number", value: 1, min: 1, class: "uva_sg_input_cpus"});
 	form.appendChild(this.createLabelInputPair("CPUs (cores) per task: ", this.inputs.cpus_per_task));
 
 	// Memory per processor core
-	this.inputs.mem_per_core = this.newInput({type: "number", value: 1, size: 6});
+	this.inputs.mem_per_core = this.newInput({type: "number", value: 1, size: 6, class: "uva_sg_input_mem"});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
 	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
-
-	// Number of GPUs
-	this.inputs.num_gpus = this.newInput({type: "number", value: 0, size: 4});
-	form.appendChild(this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus));
 
 	// Partitions section
 	this.inputs.partitions = [];
@@ -158,7 +152,6 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		});
 		new_radio.partition_name = this.settings.partitions.names[i];
 		this.inputs.partitions.push(new_radio);
-		// var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
 		var partition_container = this.newSpan(null);
 		partition_container.className = "uva_sg_input_partition_container";
 		var name_span = this.newSpan(null, this.settings.partitions.names[i]);
@@ -168,6 +161,12 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		partitions_span.appendChild(partition_container);
 	}
 	form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
+
+	// Number of GPUs
+	this.inputs.num_gpus = this.newInput({type: "number", value: 0, size: 4, class: "uva_sg_input_gpus"});
+	var gpu_label = this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus);
+	gpu_label.style.display = "none";
+	form.appendChild(gpu_label);
 
 	// GRES
 	this.inputs.gres = [];
@@ -183,7 +182,6 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		});
 		new_radio.gres_name = this.settings.gres.names[i];
 		this.inputs.gres.push(new_radio);
-		// var url = this.newA(this.settings.gres.info_base_url + this.settings.gres.names[i], "?");
 		var gres_container = this.newSpan(null);
 		gres_container.className = "uva_sg_input_gres_container";
 		var name_span = this.newSpan(null, this.settings.gres.names[i]);
@@ -208,7 +206,6 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		});
 		new_radio.constraint_name = this.settings.constraints.names[i];
 		this.inputs.constraint.push(new_radio);
-		// var url = this.newA(this.settings.constraints.info_base_url + this.settings.constraints.names[i], "?");
 		var constraint_container = this.newSpan(null);
 		constraint_container.className = "uva_sg_input_constraint_container";
 		var name_span = this.newSpan(null, this.settings.constraints.names[i]);
@@ -239,14 +236,16 @@ UVAScriptGen.prototype.createForm = function(doc) {
 };
 
 function updateVisibility(event){
-	// update gres visibility
+	// update gres and gpu visibility
   var partitions = document.querySelectorAll(".uva_sg_input_partition_container input[type='radio']");
   var gresSection = document.getElementById("GRES");
+	var gpuSection = document.getElementById("Number of GPUs");
 
   var checkedPartition = Array.from(partitions).find(radio => radio.checked).value;
-  var showGRES = checkedPartition && (checkedPartition === 'gpu' || checkedPartition === 'interactive');
+  var showGPU = checkedPartition && (checkedPartition === 'gpu' || checkedPartition === 'interactive');
 
-  gresSection.style.display = showGRES ? 'block' : 'none';
+  gresSection.style.display = showGPU ? 'block' : 'none';
+  gpuSection.style.display = showGPU ? 'block' : 'none';
 
 	// update constraint visibility
 	var gres = document.querySelectorAll(".uva_sg_input_gres_container input[type='radio']");
@@ -256,18 +255,57 @@ function updateVisibility(event){
   var checkedGRES = checkedGRESRadio ? checkedGRESRadio.value : null;
   var showConstraint = checkedGRES && checkedGRES === 'a100';
 
-  constraintSection.style.display = (showConstraint && showGRES) ? 'block' : 'none';
+  constraintSection.style.display = (showConstraint && showGPU) ? 'block' : 'none';
 
+	if (!showGPU) {
+		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus");
+    Array.from(numGPUsInputs).forEach(input => {
+        input.value = 0;
+    });
+		gres.forEach(radio => {
+			radio.checked = false;
+		});
+	}
+	if (showGPU){
+		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus");
+    Array.from(numGPUsInputs).forEach(input => {
+        input.value = 1;
+    });
+	}
 	if (!showConstraint) {
 		var constraintRadios = document.querySelectorAll(".uva_sg_input_constraint_container input[type='radio']");
 		constraintRadios.forEach(radio => {
 			radio.checked = false;
 		});
 	}
-	if (!showGRES) {
-		gres.forEach(radio => {
-			radio.checked = false;
-		});
+
+	var numTasksInputs = document.getElementsByClassName("uva_sg_input_tasks")[0];
+	var numNodesInputs = document.getElementsByClassName("uva_sg_input_nodes")[0];
+	var memPerCoreInputs = document.getElementsByClassName("uva_sg_input_mem")[0];
+	var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
+
+	// set default values on partition change
+	switch (checkedPartition) {
+		case "standard":
+			numTasksInputs.value = Math.min(numTasksInputs.value, 1000); // Ensure tasks_per_node does not exceed 1000
+			numNodesInputs.value = 1; // Set num_nodes to 1 as per standard partition rules
+			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 9600); // Ensure MB_per_core does not exceed 9600
+			break;
+		case "interactive":
+			numTasksInputs.value = Math.min(numTasksInputs.value, 24); // Ensure tasks_per_node does not exceed 24
+			numNodesInputs.value = Math.min(numNodesInputs.value, 2); // Ensure num_nodes does not exceed 2
+			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 9000); // Ensure MB_per_core does not exceed 9000
+			break;
+		case "parallel":
+			numTasksInputs.value = Math.min(numTasksInputs.value, 6000); // Ensure tasks_per_node does not exceed 6000
+			numNodesInputs.value = Math.max(2, Math.min(numNodesInputs.value, 64)); // Ensure num_nodes is between 2 and 64
+			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 8000); // Ensure MB_per_core does not exceed 8000
+			break;
+		case "gpu":
+			numGPUsInputs.value = Math.min(numGPUsInputs.value, 32); // Ensure gpus does not exceed 32
+			numNodesInputs.value = Math.min(numNodesInputs.value, 4); // Ensure num_nodes does not exceed 4
+			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 32000); // Ensure MB_per_core does not exceed 32000
+			break;
 	}
 }
 
@@ -310,12 +348,62 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	this.values.email_address = this.inputs.email_address.value;
 
 	// Check values
-	if(this.values.MB_per_core > 20*1024*1024)
-		alert("Are you crazy? That is way too much RAM!");
-	if(this.values.walltime_in_minutes > 86400*7)
-		alert("Global maximum walltime is 7 days");
-	if(this.values.group_name == "")
+	this.values.partitions.forEach(partition => {
+		switch (partition) {
+			case "standard":
+				if (this.values.tasks_per_node > 1000) {
+					alert("Maximum Cores(GPU) per User for standard partition exceeded.");
+				}
+				if (this.values.num_nodes != 1) {
+					alert("Nodes per Job for standard partition must be 1.");
+				}
+				if (this.values.MB_per_core > 9600){
+					alert("Maximum Memory per CPU for standard partition exceeded.");
+				}
+				break;
+			case "interactive":
+				if (this.values.tasks_per_node > 24) {
+					alert("Maximum Cores(GPU) per User for interactive partition exceeded.");
+				}
+				if (this.values.num_nodes > 2) {
+					alert("Maximum Nodes per Job for interactive partition is 2.");
+				}
+				if (this.values.MB_per_core > 9000){
+					alert("Maximum Memory per CPU for interactive partition exceeded.");
+				}
+				break;
+			case "parallel":
+				// Check for parallel partition constraints
+				if (this.values.tasks_per_node > 6000) {
+					alert("Maximum Cores(GPU) per User for parallel partition exceeded.");
+				}
+				if (this.values.num_nodes < 2 || this.values.num_nodes > 64) {
+					alert("Nodes per Job for parallel partition must be between 2 and 64.");
+				}
+				if (this.values.MB_per_core > 8000){
+					alert("Maximum Memory per CPU for parallel partition exceeded.");
+				}
+				break;
+			case "gpu":
+				// Check for gpu partition constraints
+				if (this.values.gpus > 32) {
+					alert("Maximum gres per gpu for gpu partition exceeded.");
+				}
+				if (this.values.num_nodes > 4) {
+					alert("Maximum Nodes per Job for gpu partition is 4.");
+				}
+				if (this.values.MB_per_core > 32000){
+					alert("Maximum Memory per CPU for gpu partition exceeded.");
+				}
+				break;
+		}
+	});
+	if(this.values.walltime_in_minutes > 86400*7){
+		alert("Global maximum walltime is 7 days");		
+	}
+	if(this.values.group_name == ""){
 		alert("Please enter an allocation name");
+	}
 };
 
 UVAScriptGen.prototype.generateScriptSLURM = function () {
