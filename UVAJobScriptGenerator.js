@@ -14,16 +14,14 @@ UVAScriptGen.prototype.newCheckbox = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "checkbox";
-	if(args.checked)
-		newEl.checked = true;
+	if(args.checked) newEl.checked = true;
 	if(args.toggle) {
 		newEl.onclick = newEl.onchange = function () {
 			tthis.updateJobscript();
 		};
-	}
-	else {
+	} else {
 		newEl.onclick = newEl.onchange = function () {
-				tthis.updateJobscript();
+			tthis.updateJobscript();
 		};
 	}
 	return newEl;
@@ -157,6 +155,8 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	// GRES
 	this.inputs.gres = [];
 	var gres_span = this.newSpan("uva_sg_input_gres");
+	gres_span.style.display = "inline-flex";
+	gres_span.style.margin = "0px";
 	var gres_label = this.createLabelInputPair("GRES: ", gres_span);
 	gres_label.style.display = "none";
 	var gresRadioGroupName = "gresOptions";
@@ -246,11 +246,12 @@ function updateVisibility(event){
   var checkedPartition = Array.from(partitions).find(radio => radio.checked).value;
   var showGPU = checkedPartition && (checkedPartition === 'gpu' || checkedPartition === 'interactive');
 
-  gresSection.style.display = showGPU ? 'block' : 'none';
+  gresSection.style.display = showGPU ? 'inline-flex' : 'none';
   gpuSection.style.display = showGPU ? 'block' : 'none';
 
 	// update constraint visibility
 	var gres = document.querySelectorAll(".uva_sg_input_gres_container input[type='radio']");
+	var gresContainers = document.getElementsByClassName("uva_sg_input_gres_container");
   var constraintSection = document.getElementById("Constraint");
   
 	var checkedGRESRadio = Array.from(gres).find(radio => radio.checked);
@@ -258,21 +259,23 @@ function updateVisibility(event){
   var showConstraint = checkedGRES && checkedGRES === 'a100';
 
   constraintSection.style.display = (showConstraint && showGPU) ? 'block' : 'none';
+  
+	// Show valid gres values based on partition
+  Array.from(gresContainers).forEach((container, index) => {
+    if (checkedPartition === 'interactive') {
+      container.style.display = index < 2 ? 'block' : 'none';
+    } else if (checkedPartition === 'gpu') {
+      container.style.display = index >= 2 ? 'block' : 'none';
+    }
+  });
 
 	if (!showGPU) {
-		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus");
-    Array.from(numGPUsInputs).forEach(input => {
-        input.value = 0;
-    });
-		gres.forEach(radio => {
-			radio.checked = false;
-		});
+		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
+		numGPUsInputs.value = 0;
 	}
 	if (showGPU){
-		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus");
-    Array.from(numGPUsInputs).forEach(input => {
-        input.value = 1;
-    });
+		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
+		numGPUsInputs.value = 1;
 	}
 	if (!showConstraint) {
 		var constraintRadios = document.querySelectorAll(".uva_sg_input_constraint_container input[type='radio']");
@@ -280,7 +283,15 @@ function updateVisibility(event){
 			radio.checked = false;
 		});
 	}
+	const allRadios = document.querySelectorAll("input[type='radio']");
 
+	allRadios.forEach(radio => {
+		console.log(radio, radio.parentElement)
+		const isHidden = radio.style.display === 'none' || radio.parentElement.style.display === 'none';
+		if (isHidden) {
+			radio.checked = false;
+		}
+	});
 	var numTasksInputs = document.getElementsByClassName("uva_sg_input_tasks")[0];
 	var numNodesInputs = document.getElementsByClassName("uva_sg_input_nodes")[0];
 	var memPerCoreInputs = document.getElementsByClassName("uva_sg_input_mem")[0];
@@ -509,7 +520,7 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	if(!this.inputs.requeue.checked)
 		sbatch("--no-requeue   # prevents job returning to queue after node failure");
 	if(this.inputs.group_name.value != '') {
-		sbatch("--gid=" + this.inputs.group_name.value);
+		sbatch("--account=" + this.inputs.group_name.value);
 	}
 
 	scr += "\n\n# LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE\n";
