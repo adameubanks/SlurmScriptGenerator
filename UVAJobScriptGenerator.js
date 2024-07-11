@@ -217,7 +217,7 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	// Memory per processor core
 	this.inputs.mem_per_core = this.newInput({type: "number", value: 1, size: 6, class: "uva_sg_input_mem"});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
-	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
+	form.appendChild(this.createLabelInputPair("Memory Per Core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
 
 	this.inputs.wallhours = this.newInput({value: "1", size: 3});
 	this.inputs.wallmins = this.newInput({value: "00", size: 2, maxLength: 2});
@@ -283,8 +283,8 @@ function updateVisibility(event){
 			radio.checked = false;
 		});
 	}
+	// deselect radios when partition is changed
 	const allRadios = document.querySelectorAll("input[type='radio']");
-
 	allRadios.forEach(radio => {
 		console.log(radio, radio.parentElement)
 		const isHidden = radio.style.display === 'none' || radio.parentElement.style.display === 'none';
@@ -367,7 +367,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 			case "standard":
 				if (this.values.tasks_per_node > 1000) {
 					this.inputs.tasks_per_node.value = 1000;
-					showAlert("Maximum Cores(GPU) per User for standard partition exceeded.");
+					showAlert("Maximum Cores (GPU) per User for standard partition exceeded.");
 				} else if (this.values.num_nodes != 1) {
 					this.inputs.num_nodes.value = 1;
 					showAlert("Nodes per Job for standard partition must be 1.");
@@ -382,7 +382,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 			case "interactive":
 				if (this.values.tasks_per_node > 24) {
 					this.inputs.tasks_per_node.value = 24;
-					showAlert("Maximum Cores(GPU) per User for interactive partition exceeded.");
+					showAlert("Maximum Cores (GPU) per User for interactive partition exceeded.");
 					isValidConfiguration = false;
 				} else if (this.values.num_nodes > 2) {
 					this.inputs.num_nodes.value = 2;
@@ -405,7 +405,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				// Check for parallel partition constraints
 				if (this.values.tasks_per_node > 6000) {
 					this.inputs.tasks_per_node.value = 6000;
-					showAlert("Maximum Cores(GPU) per User for parallel partition exceeded.");
+					showAlert("Maximum Cores (GPU) per User for parallel partition exceeded.");
 				} else if (this.values.num_nodes < 2 || this.values.num_nodes > 64) {
 					this.inputs.num_nodes.value = 2;
 					showAlert("Nodes per Job for parallel partition must be between 2 and 64.");
@@ -501,7 +501,11 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 		sbatch("-p " + partitions + "   # partition(s)");
 	}
 
-	sbatch("--mem-per-cpu=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory per CPU core");
+	if (this.inputs.num_nodes.value == 1) {
+		sbatch("--mem=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory");
+	} else {
+		sbatch("--mem-per-cpu=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory per CPU core");	
+	}
 
 	if(this.inputs.job_name.value && this.inputs.job_name.value != "") {
 		sbatch("-J \"" + this.inputs.job_name.value + "\"   # job name");
