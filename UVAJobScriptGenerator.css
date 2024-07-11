@@ -129,13 +129,16 @@ input[type="checkbox"] {
 #copyButton {
 	position: absolute;
 	right: 0;
-	transition: opacity 0.5s ease;
-	opacity: 1;
-	cursor: pointer;
-	transition: background-color 0.3s;
-  background-color: transparent;
 	color:#4b4b4b;
-	border: 2px solid;
-	border-radius: 5px;
-	border-color: #4b4b4b;
+	border: 0px;
+	outline: none;
+}
+
+#copyButton i {
+	transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.fa-check {
+	color: green;
+	transform: scale(1.3);
 }
