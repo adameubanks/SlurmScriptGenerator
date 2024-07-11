@@ -126,6 +126,7 @@ input[type="checkbox"] {
 	margin-right: 5px;
 }
 
+/* Copy button styling */
 #copyButton {
 	position: absolute;
 	right: 0;

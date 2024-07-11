@@ -15,15 +15,11 @@ UVAScriptGen.prototype.newCheckbox = function(args) {
 	var newEl = document.createElement("input");
 	newEl.type = "checkbox";
 	if(args.checked) newEl.checked = true;
-	if(args.toggle) {
-		newEl.onclick = newEl.onchange = function () {
-			tthis.updateJobscript();
-		};
-	} else {
-		newEl.onclick = newEl.onchange = function () {
-			tthis.updateJobscript();
-		};
-	}
+	
+	newEl.onclick = newEl.onchange = function () {
+		tthis.updateJobscript();
+	};
+
 	return newEl;
 }
 
@@ -31,17 +27,15 @@ UVAScriptGen.prototype.newRadio = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "radio";
-	if(args.name)
-		newEl.name = args.name;
-	if(args.checked)
-		newEl.checked = true;
-	if(args.value)
-		newEl.value = args.value;
+	if(args.name) newEl.name = args.name;
+	if(args.checked) newEl.checked = true;
+	if(args.value) newEl.value = args.value;
 	
 	newEl.onclick = newEl.onchange = function () {
-		updateVisibility();
+		// updateVisibility();
 		tthis.updateJobscript();
 	};
+
 	return newEl;
 }
 
@@ -49,24 +43,16 @@ UVAScriptGen.prototype.newInput = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "text";
-	if(args.size)
-		newEl.size = args.size;
-	if(args.maxLength)
-		newEl.maxLength = args.maxLength;
-	if(args.value)
-		newEl.value = args.value;
-	if(args.type)
-		newEl.type = args.type
-	if(args.min)
-		newEl.min = args.min;
-	if(args.max)
-		newEl.max = args.max;
-	if(args.class)
-		newEl.className = args.class;
+	if(args.size) newEl.size = args.size;
+	if(args.maxLength) newEl.maxLength = args.maxLength;
+	if(args.value) newEl.value = args.value;
+	if(args.type) newEl.type = args.type
+	if(args.class)newEl.className = args.class;
 
 	newEl.onclick = newEl.onchange = function () {
 		tthis.updateJobscript();
 	};
+
 	return newEl;
 }
 
@@ -83,22 +69,26 @@ UVAScriptGen.prototype.newSelect = function(args) {
 			newEl.appendChild(newOpt);
 		}
 	}
+
 	newEl.onclick = newEl.onchange = function () {
 		tthis.updateJobscript();
 	};
+
 	return newEl;
 }
 
 UVAScriptGen.prototype.newSpan = function() {
 	var newEl = document.createElement("span");
-	if(arguments[0])
-		newEl.id = arguments[0];
+	if(arguments[0]) newEl.id = arguments[0];
+
 	for (var i = 1; i < arguments.length; i++) {
 		if(typeof arguments[i] == "string") {
 			newEl.appendChild(document.createTextNode(arguments[i]));
-		} else
+		} else {
 			newEl.appendChild(arguments[i]);
+		}
 	}
+
 	return newEl;
 };
 
@@ -106,11 +96,14 @@ UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) 
 	var div = document.createElement("div");
 	div.className = "input-pair";
 	div.id = labelText.slice(0, -2);
+	inputElement.id = div.id;
 	var label = document.createElement("label");
 	label.className = "input-label";
+	label.htmlFor = div.id;
 	label.appendChild(document.createTextNode(labelText));
 	div.appendChild(label);
 	div.appendChild(inputElement);
+
 	return div;
 };
 
@@ -121,6 +114,7 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	this.inputs.job_name = this.newInput({});
 	form.appendChild(this.createLabelInputPair("Job name (optional): ", this.inputs.job_name));
 
+	// Allocation name
 	this.inputs.group_name = this.newInput({value: "MyGroup"});
 	form.appendChild(this.createLabelInputPair("Allocation name (required): ", this.inputs.group_name));
 
@@ -217,16 +211,20 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	// Memory per processor core
 	this.inputs.mem_per_core = this.newInput({type: "number", value: 1, size: 6, class: "uva_sg_input_mem"});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
-	form.appendChild(this.createLabelInputPair("Memory Per Core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
+	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
 
+
+	// Walltime
 	this.inputs.wallhours = this.newInput({value: "1", size: 3});
 	this.inputs.wallmins = this.newInput({value: "00", size: 2, maxLength: 2});
 	this.inputs.wallsecs = this.newInput({value: "00", size: 2, maxLength: 2});
 	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
 
+	// Requeueable
 	this.inputs.requeue = this.newCheckbox({checked: 1});
 	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.requeue));
 
+	// Email
 	this.inputs.email_begin = this.newCheckbox({checked: 0});
 	this.inputs.email_end = this.newCheckbox({checked: 0});
 	this.inputs.email_abort = this.newCheckbox({checked: 0});
@@ -237,8 +235,8 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	return form;
 };
 
-function updateVisibility(event){
-	// update gres and gpu visibility
+function updateVisibility(event){	
+	// update gres and number of gpus visibility
   var partitions = document.querySelectorAll(".uva_sg_input_partition_container input[type='radio']");
   var gresSection = document.getElementById("GRES");
 	var gpuSection = document.getElementById("Number of GPUs");
@@ -269,29 +267,29 @@ function updateVisibility(event){
     }
   });
 
+	// set defaults for num gpu
 	if (!showGPU) {
 		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
 		numGPUsInputs.value = 0;
 	}
-	if (showGPU){
-		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
-		numGPUsInputs.value = 1;
-	}
+
+	// deselect constraint radios when constraint is hidden
 	if (!showConstraint) {
 		var constraintRadios = document.querySelectorAll(".uva_sg_input_constraint_container input[type='radio']");
 		constraintRadios.forEach(radio => {
 			radio.checked = false;
 		});
 	}
+
 	// deselect radios when partition is changed
 	const allRadios = document.querySelectorAll("input[type='radio']");
 	allRadios.forEach(radio => {
-		console.log(radio, radio.parentElement)
 		const isHidden = radio.style.display === 'none' || radio.parentElement.style.display === 'none';
 		if (isHidden) {
 			radio.checked = false;
 		}
 	});
+
 	var numTasksInputs = document.getElementsByClassName("uva_sg_input_tasks")[0];
 	var numNodesInputs = document.getElementsByClassName("uva_sg_input_nodes")[0];
 	var memPerCoreInputs = document.getElementsByClassName("uva_sg_input_mem")[0];
@@ -319,6 +317,13 @@ function updateVisibility(event){
 			numNodesInputs.value = Math.min(numNodesInputs.value, 4); // Ensure num_nodes does not exceed 4
 			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 32000); // Ensure MB_per_core does not exceed 32000
 			break;
+	}
+
+	var memory_label = document.querySelector("label[for='Total Memory']");
+	if (numNodesInputs.value == 1) {
+			memory_label.textContent = "Total Memory";
+	} else {
+			memory_label.textContent = "Memory Per Core: ";
 	}
 }
 
@@ -360,7 +365,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	this.values.sendemail.abort = this.inputs.email_abort.checked;
 	this.values.email_address = this.inputs.email_address.value;
 
-	// Check values
+	// Check if values are valid
 	let isValidConfiguration = true;
 	this.values.partitions.forEach(partition => {
 		switch (partition) {
@@ -383,19 +388,15 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				if (this.values.tasks_per_node > 24) {
 					this.inputs.tasks_per_node.value = 24;
 					showAlert("Maximum Cores (GPU) per User for interactive partition exceeded.");
-					isValidConfiguration = false;
 				} else if (this.values.num_nodes > 2) {
 					this.inputs.num_nodes.value = 2;
 					showAlert("Maximum Nodes per Job for interactive partition is 2.");
-					isValidConfiguration = false;
 				} else if (this.values.MB_per_core > 9000){
 					this.inputs.MB_per_core.value = 9000;
 					showAlert("Maximum Memory per CPU for interactive partition exceeded.");
-					isValidConfiguration = false;
 				} else if (this.values.gpus > 32) {
 					this.inputs.num_gpus.value = 32;
 					showAlert("Maximum gres per gpu for interactive partition exceeded.");
-					isValidConfiguration = false;
 				} else {
 					break;
 				}
@@ -409,11 +410,9 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				} else if (this.values.num_nodes < 2 || this.values.num_nodes > 64) {
 					this.inputs.num_nodes.value = 2;
 					showAlert("Nodes per Job for parallel partition must be between 2 and 64.");
-					isValidConfiguration = false;
 				} else if (this.values.MB_per_core > 8000){
 					this.inputs.MB_per_core.value = 8000;
 					showAlert("Maximum Memory per CPU for parallel partition exceeded.");
-					isValidConfiguration = false;
 				} else {
 					break;
 				}
@@ -424,15 +423,12 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				if (this.values.gpus > 32) {
 					this.inputs.num_gpus.value = 32;
 					showAlert("Maximum gres per gpu for gpu partition exceeded.");
-					isValidConfiguration = false;
 				} else if (this.values.num_nodes > 4) {
 					this.inputs.num_nodes.value = 4;
 					showAlert("Maximum Nodes per Job for gpu partition is 4.");
-					isValidConfiguration = false;
 				} else if (this.values.MB_per_core > 32000){
 					this.inputs.MB_per_core.value = 32000
 					showAlert("Maximum Memory per CPU for gpu partition exceeded.");
-					isValidConfiguration = false;
 				} else {
 					break;
 				}
@@ -537,7 +533,7 @@ UVAScriptGen.prototype.updateJobscript = function() {
 	if (!isValidConfiguration) {
 			return;
 	}
-	
+	updateVisibility();
 	this.toJobScript();
 };
 

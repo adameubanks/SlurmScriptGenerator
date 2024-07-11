@@ -14,7 +14,6 @@
 <body>
 <div class="container mt-5">
     <h1 class="mb-4">Slurm Job Script Generator</h1>
-    <!-- <p>This tool helps you generate a Slurm job script for the Rivanna and Afton clusters at the University of Virginia. You can customize the script by selecting the desired options below.</p> -->
     <div id="alert-container"></div>
     <div id="UVAJobScriptGenerator"></div>
     <script type="text/javascript">
@@ -26,6 +25,7 @@
         };
 
         uva_script_gen.settings.gres = {
+            //first 2 are for interactive, everything else for gpu
             names: ["RTX3090", "RTX2080", "a6000", "a40", "a100",  "v100"],
             show: true
         };
