@@ -291,7 +291,7 @@ function updateVisibility(event){
 
 	var numTasksInputs = document.getElementsByClassName("uva_sg_input_tasks")[0];
 	var numNodesInputs = document.getElementsByClassName("uva_sg_input_nodes")[0];
-	var memPerCoreInputs = document.getElementsByClassName("uva_sg_input_mem")[0];
+	// var memPerCoreInputs = document.getElementsByClassName("uva_sg_input_mem")[0];
 	var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
 
 	// set default values on partition change
@@ -299,28 +299,24 @@ function updateVisibility(event){
 		case "standard":
 			numTasksInputs.value = Math.min(numTasksInputs.value, 1000); // Ensure tasks_per_node does not exceed 1000
 			numNodesInputs.value = 1; // Set num_nodes to 1 as per standard partition rules
-			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 9600); // Ensure MB_per_core does not exceed 9600
 			break;
 		case "interactive":
 			numTasksInputs.value = Math.min(numTasksInputs.value, 24); // Ensure tasks_per_node does not exceed 24
 			numNodesInputs.value = Math.min(numNodesInputs.value, 2); // Ensure num_nodes does not exceed 2
-			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 9000); // Ensure MB_per_core does not exceed 9000
 			break;
 		case "parallel":
 			numTasksInputs.value = Math.min(numTasksInputs.value, 6000); // Ensure tasks_per_node does not exceed 6000
 			numNodesInputs.value = Math.max(2, Math.min(numNodesInputs.value, 64)); // Ensure num_nodes is between 2 and 64
-			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 8000); // Ensure MB_per_core does not exceed 8000
 			break;
 		case "gpu":
 			numGPUsInputs.value = Math.min(numGPUsInputs.value, 32); // Ensure gpus does not exceed 32
 			numNodesInputs.value = Math.min(numNodesInputs.value, 4); // Ensure num_nodes does not exceed 4
-			memPerCoreInputs.value = Math.min(memPerCoreInputs.value, 32000); // Ensure MB_per_core does not exceed 32000
 			break;
 	}
 
 	var memory_label = document.querySelector("label[for='Total Memory']");
 	if (numNodesInputs.value == 1) {
-			memory_label.textContent = "Total Memory";
+			memory_label.textContent = "Total Memory: ";
 	} else {
 			memory_label.textContent = "Memory Per Core: ";
 	}
@@ -355,7 +351,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	this.values.gpus = this.inputs.num_gpus.value
 
 	this.values.requeue = this.inputs.requeue && this.inputs.requeue.checked;
-	this.values.walltime_in_minutes = this.inputs.wallhours.value * 3600 + this.inputs.wallmins.value * 60;
+	this.values.walltime_in_minutes = this.inputs.wallhours.value * 60 + this.inputs.wallmins.value * 60;
 
 	this.values.job_name = this.inputs.job_name.value;
 	this.values.group_name = this.inputs.group_name.value;
@@ -377,9 +373,6 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				} else if (this.values.num_nodes != 1) {
 					this.inputs.num_nodes.value = 1;
 					showAlert("Nodes per Job for standard partition must be 1.");
-				} else if (this.values.MB_per_core > 9600){
-					this.inputs.MB_per_core.value = 9600;
-					showAlert("Maximum Memory per CPU for standard partition exceeded.");
 				} else {
 					break;
 				}
@@ -392,9 +385,6 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				} else if (this.values.num_nodes > 2) {
 					this.inputs.num_nodes.value = 2;
 					showAlert("Maximum Nodes per Job for interactive partition is 2.");
-				} else if (this.values.MB_per_core > 9000){
-					this.inputs.MB_per_core.value = 9000;
-					showAlert("Maximum Memory per CPU for interactive partition exceeded.");
 				} else if (this.values.gpus > 32) {
 					this.inputs.num_gpus.value = 32;
 					showAlert("Maximum gres per gpu for interactive partition exceeded.");
@@ -411,9 +401,6 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				} else if (this.values.num_nodes < 2 || this.values.num_nodes > 64) {
 					this.inputs.num_nodes.value = 2;
 					showAlert("Nodes per Job for parallel partition must be between 2 and 64.");
-				} else if (this.values.MB_per_core > 8000){
-					this.inputs.MB_per_core.value = 8000;
-					showAlert("Maximum Memory per CPU for parallel partition exceeded.");
 				} else {
 					break;
 				}
@@ -427,9 +414,6 @@ UVAScriptGen.prototype.retrieveValues = function() {
 				} else if (this.values.num_nodes > 4) {
 					this.inputs.num_nodes.value = 4;
 					showAlert("Maximum Nodes per Job for gpu partition is 4.");
-				} else if (this.values.MB_per_core > 32000){
-					this.inputs.MB_per_core.value = 32000
-					showAlert("Maximum Memory per CPU for gpu partition exceeded.");
 				} else {
 					break;
 				}
@@ -479,9 +463,9 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	if(this.inputs.num_gpus.value > 0) {
 		if(this.values.gres.length > 0) {
 			var gres = this.values.gres.join(",")
-			sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value)
-		}else{
-			sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
+			sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value + "   # gpu devices per node");
+		} else {
+			sbatch("--gres=gpu:" + this.inputs.num_gpus.value + "   # gpu devices per node");
 		}
 	}
 
@@ -570,10 +554,10 @@ function calculateSU(values) {
 	var ntask = values.tasks_per_node;
 	var ncpu = values.cpus_per_task;
 	var tmem = values.MB_per_core / 1024;
-	var nhour = values.walltime_in_minutes / 60 / 60;
-	console.log(nnode, ntask, ncpu, tmem, nhour);
+	var nhour = values.walltime_in_minutes / 60;
 	var ncore = nnode * ntask * ncpu;
-
+  var checkedPartition = Array.from(values.partitions)[0];
+	console.log("Calculating SU for partition: " + checkedPartition);
 	// Rates for Rivanna
 	var R_c_Rivanna = 1;
 	var R_m_Rivanna = 0.5;
@@ -582,11 +566,41 @@ function calculateSU(values) {
 	var R_c_Afton = 6;
 	var R_m_Afton = 1;
 
-	// Calculate SU for Rivanna
-	var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
-
-	// Calculate SU for Afton
-	var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
+	// Calculate SU based on selected partition
+	switch (checkedPartition) {
+		case "standard":
+			var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
+			var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
+			break;
+		// case "interactive":
+		// 	var ngpu = values.num_gpus;
+		// 	var R_G;
+		// 	if (ngpu > 0) {
+		// 		switch (values.gpu_type) {
+		// 			case "RTX2080":
+		// 				R_G = 48;
+		// 				break;
+		// 			case "RTX3090":
+		// 				R_G = 65;
+		// 				break;
+		// 			default:
+		// 				R_G = 0;
+		// 		}
+		// 		var ngcore = nnode * ngpu;
+		// 		su = nhour * ngcore * R_G;
+		// 	} else {
+		// 		su = nhour * (ncore * R_c_Interactive + tmem * R_m_Interactive);
+		// 	}
+		// 	break;
+		// case "parallel":
+		// 	su = nhour * (ncore * R_c_Parallel + tmem * R_m_Parallel);
+		// 	break;
+		// case "gpu":
+		// 	su = nhour * (ncore * R_c_GPU + tmem * R_m_GPU);
+		// 	break;
+		// default:
+		// 	su = 0;
+	}
 
 	return [ su_A, su_R ];
 }
