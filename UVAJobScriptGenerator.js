@@ -569,8 +569,8 @@ function calculateSU(values) {
 	var nnode = values.num_nodes;
 	var ntask = values.tasks_per_node;
 	var ncpu = values.cpus_per_task;
-	var tmem = values.MB_per_core / 1024 * ncpu * ntask;
-	var nhour = values.walltime_in_minutes / 60;
+	var tmem = values.MB_per_core / 1024;
+	var nhour = values.walltime_in_minutes / 60 / 60;
 	console.log(nnode, ntask, ncpu, tmem, nhour);
 	var ncore = nnode * ntask * ncpu;
 
