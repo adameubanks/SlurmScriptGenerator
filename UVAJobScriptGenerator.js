@@ -32,7 +32,6 @@ UVAScriptGen.prototype.newRadio = function(args) {
 	if(args.value) newEl.value = args.value;
 	
 	newEl.onclick = newEl.onchange = function () {
-		// updateVisibility();
 		tthis.updateJobscript();
 	};
 
@@ -328,6 +327,7 @@ function updateVisibility(event){
 }
 
 UVAScriptGen.prototype.retrieveValues = function() {
+	console.log("Retrieving values");
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
 
 	this.values.partitions = [];
@@ -351,6 +351,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 
 	this.values.num_nodes = this.inputs.num_nodes.value;
 	this.values.tasks_per_node = this.inputs.tasks_per_node.value;
+	this.values.cpus_per_task = this.inputs.cpus_per_task.value;
 	this.values.gpus = this.inputs.num_gpus.value
 
 	this.values.requeue = this.inputs.requeue && this.inputs.requeue.checked;
@@ -534,8 +535,61 @@ UVAScriptGen.prototype.updateJobscript = function() {
 			return;
 	}
 	updateVisibility();
+	this.updateSU();
 	this.toJobScript();
 };
+
+UVAScriptGen.prototype.updateSU = function() {
+	console.log(this.values)
+	var suAfton = calculateSU(this.values)[0];
+	var suRivanna = calculateSU(this.values)[1];
+
+	var suAftonDiv = document.getElementById("uva_sg_su_afton");
+	if(suAftonDiv) {
+			suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
+	} else {
+			suAftonDiv = document.createElement("div");
+			suAftonDiv.id = "uva_sg_su_afton";
+			suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
+			this.containerDiv.appendChild(suAftonDiv);
+	}
+
+	var suRivannaDiv = document.getElementById("uva_sg_su_rivanna");
+	if(suRivannaDiv) {
+			suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
+	} else {
+			suRivannaDiv = document.createElement("div");
+			suRivannaDiv.id = "uva_sg_su_rivanna";
+			suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
+			this.containerDiv.appendChild(suRivannaDiv);
+	}
+}
+
+function calculateSU(values) {
+	var nnode = values.num_nodes;
+	var ntask = values.tasks_per_node;
+	var ncpu = values.cpus_per_task;
+	var tmem = values.MB_per_core / 1024 * ncpu * ntask;
+	var nhour = values.walltime_in_minutes / 60;
+	console.log(nnode, ntask, ncpu, tmem, nhour);
+	var ncore = nnode * ntask * ncpu;
+
+	// Rates for Rivanna
+	var R_c_Rivanna = 1;
+	var R_m_Rivanna = 0.5;
+
+	// Rates for Afton
+	var R_c_Afton = 6;
+	var R_m_Afton = 1;
+
+	// Calculate SU for Rivanna
+	var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
+
+	// Calculate SU for Afton
+	var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
+
+	return [ su_A, su_R ];
+}
 
 UVAScriptGen.prototype.init = function() {
 	this.inputDiv = document.createElement("div");
@@ -570,6 +624,7 @@ UVAScriptGen.prototype.init = function() {
 	this.jobScriptDiv.querySelector("pre").appendChild(code);
 
 	this.updateJobscript();
+	this.updateSU();
 };
 
 UVAScriptGen.prototype.toJobScript = function() {
