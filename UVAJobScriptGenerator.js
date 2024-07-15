@@ -524,7 +524,6 @@ UVAScriptGen.prototype.updateJobscript = function() {
 };
 
 UVAScriptGen.prototype.updateSU = function() {
-	console.log(this.values)
 	var suAfton = calculateSU(this.values)[0];
 	var suRivanna = calculateSU(this.values)[1];
 
@@ -557,7 +556,6 @@ function calculateSU(values) {
 	var nhour = values.walltime_in_minutes / 60;
 	var ncore = nnode * ntask * ncpu;
   var checkedPartition = Array.from(values.partitions)[0];
-	console.log("Calculating SU for partition: " + checkedPartition);
 	// Rates for Rivanna
 	var R_c_Rivanna = 1;
 	var R_m_Rivanna = 0.5;
@@ -572,34 +570,30 @@ function calculateSU(values) {
 			var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
 			var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
 			break;
-		// case "interactive":
-		// 	var ngpu = values.num_gpus;
-		// 	var R_G;
-		// 	if (ngpu > 0) {
-		// 		switch (values.gpu_type) {
-		// 			case "RTX2080":
-		// 				R_G = 48;
-		// 				break;
-		// 			case "RTX3090":
-		// 				R_G = 65;
-		// 				break;
-		// 			default:
-		// 				R_G = 0;
-		// 		}
-		// 		var ngcore = nnode * ngpu;
-		// 		su = nhour * ngcore * R_G;
-		// 	} else {
-		// 		su = nhour * (ncore * R_c_Interactive + tmem * R_m_Interactive);
-		// 	}
-		// 	break;
-		// case "parallel":
-		// 	su = nhour * (ncore * R_c_Parallel + tmem * R_m_Parallel);
-		// 	break;
-		// case "gpu":
-		// 	su = nhour * (ncore * R_c_GPU + tmem * R_m_GPU);
-		// 	break;
-		// default:
-		// 	su = 0;
+		case "interactive":
+			var ngpu = values.gpus;
+			var R_G;
+			if (ngpu > 0) {
+				switch (values.gres[0]) {
+					case "RTX2080":
+						R_G = 48;
+						break;
+					case "RTX3090":
+						R_G = 65;
+						break;
+					default:
+						R_G = 0;
+				}
+				var ngcore = nnode * ngpu;
+				su = nhour * ngcore * R_G;
+				su_A = su;
+				su_R = su;
+			} else {
+					// No GPU selected, use the same calculation as the standard partition
+					var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
+					var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
+			}
+			break;
 	}
 
 	return [ su_A, su_R ];
