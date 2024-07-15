@@ -1,4 +1,4 @@
-var UVAScriptGen = function(div) {
+var ScriptGen = function(div) {
 	this.values = {};
 	this.containerDiv = div;
 	this.inputs = {};
@@ -10,43 +10,31 @@ var UVAScriptGen = function(div) {
 	return this;
 };
 
-UVAScriptGen.prototype.newCheckbox = function(args) {
-	var tthis = this;
+ScriptGen.prototype.newElement = function(type, args) {
 	var newEl = document.createElement("input");
-	newEl.type = "checkbox";
-	if(args.checked) newEl.checked = true;
-	
-	newEl.onclick = newEl.onchange = function () {
-		tthis.updateJobscript();
-	};
-
-	return newEl;
-}
-
-UVAScriptGen.prototype.newRadio = function(args) {
 	var tthis = this;
-	var newEl = document.createElement("input");
-	newEl.type = "radio";
-	if(args.name) newEl.name = args.name;
-	if(args.checked) newEl.checked = true;
-	if(args.value) newEl.value = args.value;
-	
-	newEl.onclick = newEl.onchange = function () {
-		tthis.updateJobscript();
-	};
-
-	return newEl;
-}
-
-UVAScriptGen.prototype.newInput = function(args) {
-	var tthis = this;
-	var newEl = document.createElement("input");
-	newEl.type = "text";
-	if(args.size) newEl.size = args.size;
-	if(args.maxLength) newEl.maxLength = args.maxLength;
-	if(args.value) newEl.value = args.value;
-	if(args.type) newEl.type = args.type
-	if(args.class)newEl.className = args.class;
+	switch(type) {
+		case "checkbox":
+			newEl.type = "checkbox";
+			if(args.checked) newEl.checked = true;
+			break;
+		case "radio":
+			newEl.type = "radio";
+			if(args.name) newEl.name = args.name;
+			if(args.checked) newEl.checked = true;
+			if(args.value) newEl.value = args.value;
+			break;
+		case "text":
+			newEl.type = "text";
+			if(args.size) newEl.size = args.size;
+			if(args.maxLength) newEl.maxLength = args.maxLength;
+			if(args.value) newEl.value = args.value;
+			if(args.type) newEl.type = args.type
+			if(args.class)newEl.className = args.class;
+			break;
+		default:
+			newEl.type = "text";
+	}
 
 	newEl.onclick = newEl.onchange = function () {
 		tthis.updateJobscript();
@@ -55,7 +43,7 @@ UVAScriptGen.prototype.newInput = function(args) {
 	return newEl;
 }
 
-UVAScriptGen.prototype.newSelect = function(args) {
+ScriptGen.prototype.newSelect = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("select");
 	if(args.options) {
@@ -76,7 +64,7 @@ UVAScriptGen.prototype.newSelect = function(args) {
 	return newEl;
 }
 
-UVAScriptGen.prototype.newSpan = function() {
+ScriptGen.prototype.newSpan = function() {
 	var newEl = document.createElement("span");
 	if(arguments[0]) newEl.id = arguments[0];
 
@@ -91,7 +79,7 @@ UVAScriptGen.prototype.newSpan = function() {
 	return newEl;
 };
 
-UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
+ScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
 	var div = document.createElement("div");
 	div.className = "input-pair";
 	div.id = labelText.slice(0, -2);
@@ -106,23 +94,23 @@ UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) 
 	return div;
 };
 
-UVAScriptGen.prototype.createForm = function(doc) {
+ScriptGen.prototype.createForm = function(doc) {
 	form = document.createElement("form");
 
 	// Job name
-	this.inputs.job_name = this.newInput({});
+	this.inputs.job_name = this.newElement("text", {});
 	form.appendChild(this.createLabelInputPair("Job name (optional): ", this.inputs.job_name));
 
 	// Allocation name
-	this.inputs.group_name = this.newInput({value: "MyGroup"});
+	this.inputs.group_name = this.newElement("text", {value: "MyGroup"});
 	form.appendChild(this.createLabelInputPair("Allocation name (required): ", this.inputs.group_name));
 
 	// Partitions section
 	this.inputs.partitions = [];
-	var partitions_span = this.newSpan("uva_sg_input_partitions");
+	var partitions_span = this.newSpan("sg_input_partitions");
 	var radioGroupName = "partitionOptions";
 	for (var i in this.settings.partitions.names) {
-		var new_radio = this.newRadio({
+		var new_radio = this.newElement("radio", {
 			name: radioGroupName,
 			checked: i == 0 ? true : false,
 			value: this.settings.partitions.names[i]
@@ -130,9 +118,9 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		new_radio.partition_name = this.settings.partitions.names[i];
 		this.inputs.partitions.push(new_radio);
 		var partition_container = this.newSpan(null);
-		partition_container.className = "uva_sg_input_partition_container";
+		partition_container.className = "sg_input_partition_container";
 		var name_span = this.newSpan(null, this.settings.partitions.names[i]);
-		name_span.className = "uva_sg_input_partition_name";
+		name_span.className = "sg_input_partition_name";
 		partition_container.appendChild(new_radio);
 		partition_container.appendChild(name_span);
 		partitions_span.appendChild(partition_container);
@@ -140,21 +128,21 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
 
 	// Number of GPUs
-	this.inputs.num_gpus = this.newInput({type: "number", value: 0, size: 4, class: "uva_sg_input_gpus"});
+	this.inputs.num_gpus = this.newElement("text", {type: "number", value: 0, size: 4, class: "sg_input_gpus"});
 	var gpu_label = this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus);
 	gpu_label.style.display = "none";
 	form.appendChild(gpu_label);
 
 	// GRES
 	this.inputs.gres = [];
-	var gres_span = this.newSpan("uva_sg_input_gres");
+	var gres_span = this.newSpan("sg_input_gres");
 	gres_span.style.display = "inline-flex";
 	gres_span.style.margin = "0px";
 	var gres_label = this.createLabelInputPair("GRES: ", gres_span);
 	gres_label.style.display = "none";
 	var gresRadioGroupName = "gresOptions";
 	for (var i in this.settings.gres.names){
-		var new_radio = this.newRadio({
+		var new_radio = this.newElement("radio", {
 			name: gresRadioGroupName,
 			checked: false,
 			value: this.settings.gres.names[i]
@@ -162,9 +150,9 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		new_radio.gres_name = this.settings.gres.names[i];
 		this.inputs.gres.push(new_radio);
 		var gres_container = this.newSpan(null);
-		gres_container.className = "uva_sg_input_gres_container";
+		gres_container.className = "sg_input_gres_container";
 		var name_span = this.newSpan(null, this.settings.gres.names[i]);
-		name_span.className = "uva_sg_input_gres_name";
+		name_span.className = "sg_input_gres_name";
 		gres_container.appendChild(new_radio);
 		gres_container.appendChild(name_span);
 		gres_span.appendChild(gres_container);
@@ -173,12 +161,12 @@ UVAScriptGen.prototype.createForm = function(doc) {
 
 	// Constraint
 	this.inputs.constraint = [];
-	var constraint_span = this.newSpan("uva_sg_input_constraint");
+	var constraint_span = this.newSpan("sg_input_constraint");
 	var constraint_label = this.createLabelInputPair("Constraint: ", constraint_span);
 	constraint_label.style.display = "none";
 	var constraintRadioGroupName = "constraintOptions";
 	for (var i in this.settings.constraints.names){
-		var new_radio = this.newRadio({
+		var new_radio = this.newElement("radio", {
 			name: constraintRadioGroupName,
 			checked: false,
 			value: this.settings.constraints.names[i]
@@ -186,9 +174,9 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		new_radio.constraint_name = this.settings.constraints.names[i];
 		this.inputs.constraint.push(new_radio);
 		var constraint_container = this.newSpan(null);
-		constraint_container.className = "uva_sg_input_constraint_container";
+		constraint_container.className = "sg_input_constraint_container";
 		var name_span = this.newSpan(null, this.settings.constraints.names[i]);
-		name_span.className = "uva_sg_input_constraint_name";
+		name_span.className = "sg_input_constraint_name";
 		constraint_container.appendChild(new_radio);
 		constraint_container.appendChild(name_span);
 		constraint_span.appendChild(constraint_container);
@@ -196,38 +184,39 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(constraint_label);
 
 	// Number of Nodes
-	this.inputs.num_nodes = this.newInput({type: "number", value: 1, min: 1, class: "uva_sg_input_nodes"});
+	this.inputs.num_nodes = this.newElement("text", {type: "number", value: 1, min: 1, class: "sg_input_nodes"});
 	form.appendChild(this.createLabelInputPair("Number of nodes: ", this.inputs.num_nodes));
 
 	// Tasks per Node
-	this.inputs.tasks_per_node = this.newInput({type: "number", value: 1, min: 1, class: "uva_sg_input_tasks"});
+	this.inputs.tasks_per_node = this.newElement("text", {type: "number", value: 1, min: 1, class: "sg_input_tasks"});
 	form.appendChild(this.createLabelInputPair("Tasks per node: ", this.inputs.tasks_per_node));
 
 	// Number of CPUs
-	this.inputs.cpus_per_task = this.newInput({type: "number", value: 1, min: 1, class: "uva_sg_input_cpus"});
+	this.inputs.cpus_per_task = this.newElement("text", {type: "number", value: 1, min: 1, class: "sg_input_cpus"});
 	form.appendChild(this.createLabelInputPair("CPUs (cores) per task: ", this.inputs.cpus_per_task));
 
 	// Memory per processor core
-	this.inputs.mem_per_core = this.newInput({type: "number", value: 1, size: 6, class: "uva_sg_input_mem"});
+	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 1, size: 6, class: "sg_input_mem"});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
+
 	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
 
 
 	// Walltime
-	this.inputs.wallhours = this.newInput({value: "1", size: 3});
-	this.inputs.wallmins = this.newInput({value: "00", size: 2, maxLength: 2});
-	this.inputs.wallsecs = this.newInput({value: "00", size: 2, maxLength: 2});
+	this.inputs.wallhours = this.newElement("text", {value: "1", size: 2, maxLength: 2});
+	this.inputs.wallmins = this.newElement("text", {value: "00", size: 2, maxLength: 2});
+	this.inputs.wallsecs = this.newElement("text", {value: "00", size: 2, maxLength: 2});
 	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
 
 	// Requeueable
-	this.inputs.requeue = this.newCheckbox({checked: 1});
+	this.inputs.requeue = this.newElement("checkbox", {checked: 1});
 	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.requeue));
 
 	// Email
-	this.inputs.email_begin = this.newCheckbox({checked: 0});
-	this.inputs.email_end = this.newCheckbox({checked: 0});
-	this.inputs.email_abort = this.newCheckbox({checked: 0});
-	this.inputs.email_address = this.newInput({value: ""});
+	this.inputs.email_begin = this.newElement("checkbox", {checked: 0});
+	this.inputs.email_end = this.newElement("checkbox", {checked: 0});
+	this.inputs.email_abort = this.newElement("checkbox", {checked: 0});
+	this.inputs.email_address = this.newElement("text", {value: ""});
 	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
@@ -236,7 +225,7 @@ UVAScriptGen.prototype.createForm = function(doc) {
 
 function updateVisibility(event){	
 	// update gres and number of gpus visibility
-  var partitions = document.querySelectorAll(".uva_sg_input_partition_container input[type='radio']");
+  var partitions = document.querySelectorAll(".sg_input_partition_container input[type='radio']");
   var gresSection = document.getElementById("GRES");
 	var gpuSection = document.getElementById("Number of GPUs");
 
@@ -247,8 +236,8 @@ function updateVisibility(event){
   gpuSection.style.display = showGPU ? 'block' : 'none';
 
 	// update constraint visibility
-	var gres = document.querySelectorAll(".uva_sg_input_gres_container input[type='radio']");
-	var gresContainers = document.getElementsByClassName("uva_sg_input_gres_container");
+	var gres = document.querySelectorAll(".sg_input_gres_container input[type='radio']");
+	var gresContainers = document.getElementsByClassName("sg_input_gres_container");
   var constraintSection = document.getElementById("Constraint");
   
 	var checkedGRESRadio = Array.from(gres).find(radio => radio.checked);
@@ -268,13 +257,13 @@ function updateVisibility(event){
 
 	// set defaults for num gpu
 	if (!showGPU) {
-		var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
+		var numGPUsInputs = document.getElementsByClassName("sg_input_gpus")[0];
 		numGPUsInputs.value = 0;
 	}
 
 	// deselect constraint radios when constraint is hidden
 	if (!showConstraint) {
-		var constraintRadios = document.querySelectorAll(".uva_sg_input_constraint_container input[type='radio']");
+		var constraintRadios = document.querySelectorAll(".sg_input_constraint_container input[type='radio']");
 		constraintRadios.forEach(radio => {
 			radio.checked = false;
 		});
@@ -289,10 +278,9 @@ function updateVisibility(event){
 		}
 	});
 
-	var numTasksInputs = document.getElementsByClassName("uva_sg_input_tasks")[0];
-	var numNodesInputs = document.getElementsByClassName("uva_sg_input_nodes")[0];
-	// var memPerCoreInputs = document.getElementsByClassName("uva_sg_input_mem")[0];
-	var numGPUsInputs = document.getElementsByClassName("uva_sg_input_gpus")[0];
+	var numTasksInputs = document.getElementsByClassName("sg_input_tasks")[0];
+	var numNodesInputs = document.getElementsByClassName("sg_input_nodes")[0];
+	var numGPUsInputs = document.getElementsByClassName("sg_input_gpus")[0];
 
 	// set default values on partition change
 	switch (checkedPartition) {
@@ -322,7 +310,7 @@ function updateVisibility(event){
 	}
 }
 
-UVAScriptGen.prototype.retrieveValues = function() {
+ScriptGen.prototype.retrieveValues = function() {
 	console.log("Retrieving values");
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
 
@@ -447,7 +435,7 @@ function showAlert(message) {
 	alertContainer.innerHTML += alertHTML;
 }
 
-UVAScriptGen.prototype.generateScriptSLURM = function () {
+ScriptGen.prototype.generateScriptSLURM = function () {
 	var scr = "#!/bin/bash\n\n#Submit this script with: sbatch thefilename\n\n";
 	var sbatch = function sbatch(txt) {
 		scr += "#SBATCH " + txt + "\n";
@@ -512,39 +500,39 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	return scr;
 };
 
-UVAScriptGen.prototype.updateJobscript = function() {
+ScriptGen.prototype.updateJobscript = function() {
 	var isValidConfiguration = this.retrieveValues();
     
 	if (!isValidConfiguration) {
-			return;
+		return;
 	}
 	updateVisibility();
 	this.updateSU();
 	this.toJobScript();
 };
 
-UVAScriptGen.prototype.updateSU = function() {
+ScriptGen.prototype.updateSU = function() {
 	var suAfton = calculateSU(this.values)[0];
 	var suRivanna = calculateSU(this.values)[1];
 
-	var suAftonDiv = document.getElementById("uva_sg_su_afton");
+	var suAftonDiv = document.getElementById("sg_su_afton");
 	if(suAftonDiv) {
-			suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
+		suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
 	} else {
-			suAftonDiv = document.createElement("div");
-			suAftonDiv.id = "uva_sg_su_afton";
-			suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
-			this.containerDiv.appendChild(suAftonDiv);
+		suAftonDiv = document.createElement("div");
+		suAftonDiv.id = "sg_su_afton";
+		suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
+		this.containerDiv.appendChild(suAftonDiv);
 	}
 
-	var suRivannaDiv = document.getElementById("uva_sg_su_rivanna");
+	var suRivannaDiv = document.getElementById("sg_su_rivanna");
 	if(suRivannaDiv) {
-			suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
+		suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
 	} else {
-			suRivannaDiv = document.createElement("div");
-			suRivannaDiv.id = "uva_sg_su_rivanna";
-			suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
-			this.containerDiv.appendChild(suRivannaDiv);
+		suRivannaDiv = document.createElement("div");
+		suRivannaDiv.id = "sg_su_rivanna";
+		suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
+		this.containerDiv.appendChild(suRivannaDiv);
 	}
 }
 
@@ -572,8 +560,8 @@ function calculateSU(values) {
 			break;
 		case "interactive":
 			var ngpu = values.gpus;
-			var R_G;
 			if (ngpu > 0) {
+				var R_G;
 				switch (values.gres[0]) {
 					case "RTX2080":
 						R_G = 48;
@@ -581,31 +569,32 @@ function calculateSU(values) {
 					case "RTX3090":
 						R_G = 65;
 						break;
-					default:
-						R_G = 0;
 				}
 				var ngcore = nnode * ngpu;
 				su = nhour * ngcore * R_G;
 				su_A = su;
 				su_R = su;
 			} else {
-					// No GPU selected, use the same calculation as the standard partition
-					var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
-					var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
+				// If ngpu is 0, replicate the logic from the default case
+				var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
+				var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
 			}
 			break;
+		default:
+			// Calculate SU for standard partiton by default
+			var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
+			var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
 	}
-
 	return [ su_A, su_R ];
 }
 
-UVAScriptGen.prototype.init = function() {
+ScriptGen.prototype.init = function() {
 	this.inputDiv = document.createElement("div");
-	this.inputDiv.id = "uva_sg_input_container";
+	this.inputDiv.id = "sg_input_container";
 	this.containerDiv.appendChild(this.inputDiv);
 
 	var scriptHeader = document.createElement("h1");
-	scriptHeader.id = "uva_sg_script_header";
+	scriptHeader.id = "sg_script_header";
 	scriptHeader.appendChild(document.createTextNode("Job Script"));
 	this.containerDiv.appendChild(scriptHeader);
 
@@ -613,7 +602,7 @@ UVAScriptGen.prototype.init = function() {
 	this.inputDiv.appendChild(this.form);
 
 	this.jobScriptDiv = document.createElement("div");
-	this.jobScriptDiv.id = "uva_sg_jobscript";
+	this.jobScriptDiv.id = "sg_jobscript";
 	this.jobScriptDiv.style.position = "relative";
 	this.containerDiv.appendChild(this.jobScriptDiv);
 
@@ -635,7 +624,7 @@ UVAScriptGen.prototype.init = function() {
 	this.updateSU();
 };
 
-UVAScriptGen.prototype.toJobScript = function() {
+ScriptGen.prototype.toJobScript = function() {
 	var scr = this.generateScriptSLURM();
 	var pre = this.jobScriptDiv.querySelector("pre");
 	pre.querySelector("code").textContent = scr;
