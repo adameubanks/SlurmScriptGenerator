@@ -15,6 +15,7 @@ ScriptGen.prototype.newElement = function(type, args) {
 	switch(type) {
 		case "checkbox":
 			newEl.type = "checkbox";
+			newEl.id = args.id;
 			if(args.checked) newEl.checked = true;
 			break;
 		case "radio":
@@ -30,6 +31,7 @@ ScriptGen.prototype.newElement = function(type, args) {
 			if(args.value) newEl.value = args.value;
 			if(args.type) newEl.type = args.type
 			if(args.class)newEl.className = args.class;
+			if(args.id)newEl.id = args.id;
 			break;
 		default:
 			newEl.type = "text";
@@ -45,6 +47,7 @@ ScriptGen.prototype.newElement = function(type, args) {
 ScriptGen.prototype.newSelect = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("select");
+	newEl.id = args.id;
 	if(args.options) {
 		for(var i in args.options) {
 			var newOpt = document.createElement("option");
@@ -195,24 +198,24 @@ ScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(this.createLabelInputPair("CPUs (cores) per task: ", this.inputs.cpus_per_task));
 
 	// Memory per processor core
-	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 1, size: 6, class: "input_mem"});
-	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
-	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
+	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 1, size: 6, class: "input_mem", id: "mem_per_core"});
+	this.inputs.mem_units = this.newSelect({id: "mem_units", options: [["GB", "GB"], ["MB", "MB"]]});
+	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan("total_mem", this.inputs.mem_per_core, this.inputs.mem_units)));
 
 	// Walltime
-	this.inputs.wallhours = this.newElement("text", {value: "1", size: 2, maxLength: 2});
-	this.inputs.wallmins = this.newElement("text", {value: "00", size: 2, maxLength: 2});
-	this.inputs.wallsecs = this.newElement("text", {value: "00", size: 2, maxLength: 2});
-	form.appendChild(this.createLabelInputPair("Job Time Limit: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	this.inputs.wallhours = this.newElement("text", {value: "1", size: 2, maxLength: 2, id: "wallhours"});
+	this.inputs.wallmins = this.newElement("text", {value: "00", size: 2, maxLength: 2, id: "wallmins"});
+	this.inputs.wallsecs = this.newElement("text", {value: "00", size: 2, maxLength: 2, id: "wallsecs"});
+	form.appendChild(this.createLabelInputPair("Job Time Limit: ", this.newSpan("job_time_limit", this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
 
 	// Requeueable
 	this.inputs.requeue = this.newElement("checkbox", {checked: 1});
 	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.requeue));
 
 	// Email
-	this.inputs.email_begin = this.newElement("checkbox", {checked: 0});
-	this.inputs.email_end = this.newElement("checkbox", {checked: 0});
-	this.inputs.email_abort = this.newElement("checkbox", {checked: 0});
+	this.inputs.email_begin = this.newElement("checkbox", {id: "begin", checked: 0});
+	this.inputs.email_end = this.newElement("checkbox", {id: "end", checked: 0});
+	this.inputs.email_abort = this.newElement("checkbox", {id: "abort", checked: 0});
 	this.inputs.email_address = this.newElement("text", {value: ""});
 	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
