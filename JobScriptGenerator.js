@@ -205,8 +205,7 @@ ScriptGen.prototype.createForm = function(doc) {
 	// Walltime
 	this.inputs.wallhours = this.newElement("text", {value: "1", size: 2, maxLength: 2, id: "wallhours"});
 	this.inputs.wallmins = this.newElement("text", {value: "00", size: 2, maxLength: 2, id: "wallmins"});
-	this.inputs.wallsecs = this.newElement("text", {value: "00", size: 2, maxLength: 2, id: "wallsecs"});
-	form.appendChild(this.createLabelInputPair("Job Time Limit: ", this.newSpan("job_time_limit", this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	form.appendChild(this.createLabelInputPair("Job Time Limit: ", this.newSpan("job_time_limit", this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ")));
 
 	// Requeueable
 	this.inputs.requeue = this.newElement("checkbox", {checked: 1});
@@ -339,8 +338,7 @@ ScriptGen.prototype.retrieveValues = function() {
 	this.values.gpus = this.inputs.num_gpus.value
 
 	this.values.requeue = this.inputs.requeue && this.inputs.requeue.checked;
-	this.values.walltime_in_minutes = this.inputs.wallhours.value * 60 + this.inputs.wallmins.value * 60;
-
+	this.values.walltime_in_minutes = parseInt(this.inputs.wallhours.value, 10) * 60 + parseInt(this.inputs.wallmins.value, 10);;
 	this.values.job_name = this.inputs.job_name.value;
 	this.values.group_name = this.inputs.group_name.value;
 
@@ -441,7 +439,7 @@ ScriptGen.prototype.generateScriptSLURM = function () {
 		scr += "#SBATCH " + txt + "\n";
 	};
 	
-	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":" + this.inputs.wallsecs.value + "   # walltime");
+	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":00   # walltime");
 
 	// Add SLURM directives for number of nodes and tasks per node
 	sbatch("--nodes="+this.inputs.num_nodes.value+"   # number of nodes");
