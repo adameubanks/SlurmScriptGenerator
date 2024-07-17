@@ -596,6 +596,35 @@ function calculateSU(values) {
 			su_A = nhour * (ncore * R_c_Afton + totmem * R_m_Afton);
 			su_R = 0;
 			break;
+		case "gpu":
+			var ngpu = values.gpus;
+			var ngcore = nnode * ngpu;
+			var R_G;
+			switch (values.gres[0]) {
+				case "v100":
+					R_G = 3;
+					break;
+				case "a6000":
+					R_G = 85;
+					break;
+				case "a40":
+					R_G = 119;
+					break;
+				case "a100":
+					var constraint = values.constraint[0];
+					if (constraint == "80gb") {
+						R_G = 434;
+					}
+					else if (constraint == "40gb") {
+						R_G = 267;
+					}
+					break;
+				default:
+					R_G = 0;
+			}
+			su_A = nhour * ngcore * R_G;
+			su_R = nhour * ngcore * R_G;
+			break;
 		default:
 			// Calculate SU for standard partiton by default
 			var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
