@@ -15,9 +15,14 @@
 <div class="container mt-5">
     <h1 class="mb-4">Slurm Job Script Generator</h1>
     <div id="alert-container"></div>
-    <div id="JobScriptGenerator"></div>
+    <div id="jobScriptGenerator">
+        <div id="jobScriptForm"></div>
+        <br>
+        <div id="su"><h4>Calculated Service Units (SU)</h4></div>
+        <div id="jobScript"><h1>Job Script</h1></div>
+    </div>
     <script type="text/javascript">
-        var script_gen = new ScriptGen(document.getElementById("JobScriptGenerator"));
+        var script_gen = new ScriptGen(document.getElementById("jobScriptGenerator"));
 
         script_gen.settings.partitions = {
             names: ["standard", "parallel", "interactive", "gpu"],

@@ -1,6 +1,5 @@
 var ScriptGen = function(div) {
 	this.values = {};
-	this.containerDiv = div;
 	this.inputs = {};
 	this.settings = {
 		gres: {},
@@ -107,7 +106,7 @@ ScriptGen.prototype.createForm = function(doc) {
 
 	// Partitions section
 	this.inputs.partitions = [];
-	var partitions_span = this.newSpan("sg_input_partitions");
+	var partitions_span = this.newSpan("input_partitions");
 	var radioGroupName = "partitionOptions";
 	for (var i in this.settings.partitions.names) {
 		var new_radio = this.newElement("radio", {
@@ -118,9 +117,9 @@ ScriptGen.prototype.createForm = function(doc) {
 		new_radio.partition_name = this.settings.partitions.names[i];
 		this.inputs.partitions.push(new_radio);
 		var partition_container = this.newSpan(null);
-		partition_container.className = "sg_input_partition_container";
+		partition_container.className = "input_partition_container";
 		var name_span = this.newSpan(null, this.settings.partitions.names[i]);
-		name_span.className = "sg_input_partition_name";
+		name_span.className = "input_partition_name";
 		partition_container.appendChild(new_radio);
 		partition_container.appendChild(name_span);
 		partitions_span.appendChild(partition_container);
@@ -128,14 +127,14 @@ ScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
 
 	// Number of GPUs
-	this.inputs.num_gpus = this.newElement("text", {type: "number", value: 0, size: 4, class: "sg_input_gpus"});
+	this.inputs.num_gpus = this.newElement("text", {type: "number", value: 0, size: 4, class: "input_gpus"});
 	var gpu_label = this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus);
 	gpu_label.style.display = "none";
 	form.appendChild(gpu_label);
 
 	// GRES
 	this.inputs.gres = [];
-	var gres_span = this.newSpan("sg_input_gres");
+	var gres_span = this.newSpan("input_gres");
 	gres_span.style.display = "inline-flex";
 	gres_span.style.margin = "0px";
 	var gres_label = this.createLabelInputPair("GRES: ", gres_span);
@@ -150,9 +149,9 @@ ScriptGen.prototype.createForm = function(doc) {
 		new_radio.gres_name = this.settings.gres.names[i];
 		this.inputs.gres.push(new_radio);
 		var gres_container = this.newSpan(null);
-		gres_container.className = "sg_input_gres_container";
+		gres_container.className = "input_gres_container";
 		var name_span = this.newSpan(null, this.settings.gres.names[i]);
-		name_span.className = "sg_input_gres_name";
+		name_span.className = "input_gres_name";
 		gres_container.appendChild(new_radio);
 		gres_container.appendChild(name_span);
 		gres_span.appendChild(gres_container);
@@ -161,7 +160,7 @@ ScriptGen.prototype.createForm = function(doc) {
 
 	// Constraint
 	this.inputs.constraint = [];
-	var constraint_span = this.newSpan("sg_input_constraint");
+	var constraint_span = this.newSpan("input_constraint");
 	var constraint_label = this.createLabelInputPair("Constraint: ", constraint_span);
 	constraint_label.style.display = "none";
 	var constraintRadioGroupName = "constraintOptions";
@@ -174,9 +173,9 @@ ScriptGen.prototype.createForm = function(doc) {
 		new_radio.constraint_name = this.settings.constraints.names[i];
 		this.inputs.constraint.push(new_radio);
 		var constraint_container = this.newSpan(null);
-		constraint_container.className = "sg_input_constraint_container";
+		constraint_container.className = "input_constraint_container";
 		var name_span = this.newSpan(null, this.settings.constraints.names[i]);
-		name_span.className = "sg_input_constraint_name";
+		name_span.className = "input_constraint_name";
 		constraint_container.appendChild(new_radio);
 		constraint_container.appendChild(name_span);
 		constraint_span.appendChild(constraint_container);
@@ -184,29 +183,27 @@ ScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(constraint_label);
 
 	// Number of Nodes
-	this.inputs.num_nodes = this.newElement("text", {type: "number", value: 1, min: 1, class: "sg_input_nodes"});
+	this.inputs.num_nodes = this.newElement("text", {type: "number", value: 1, min: 1, class: "input_nodes"});
 	form.appendChild(this.createLabelInputPair("Number of nodes: ", this.inputs.num_nodes));
 
 	// Tasks per Node
-	this.inputs.tasks_per_node = this.newElement("text", {type: "number", value: 1, min: 1, class: "sg_input_tasks"});
+	this.inputs.tasks_per_node = this.newElement("text", {type: "number", value: 1, min: 1, class: "input_tasks"});
 	form.appendChild(this.createLabelInputPair("Tasks per node: ", this.inputs.tasks_per_node));
 
 	// Number of CPUs
-	this.inputs.cpus_per_task = this.newElement("text", {type: "number", value: 1, min: 1, class: "sg_input_cpus"});
+	this.inputs.cpus_per_task = this.newElement("text", {type: "number", value: 1, min: 1, class: "input_cpus"});
 	form.appendChild(this.createLabelInputPair("CPUs (cores) per task: ", this.inputs.cpus_per_task));
 
 	// Memory per processor core
-	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 1, size: 6, class: "sg_input_mem"});
+	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 1, size: 6, class: "input_mem"});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
-
 	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
-
 
 	// Walltime
 	this.inputs.wallhours = this.newElement("text", {value: "1", size: 2, maxLength: 2});
 	this.inputs.wallmins = this.newElement("text", {value: "00", size: 2, maxLength: 2});
 	this.inputs.wallsecs = this.newElement("text", {value: "00", size: 2, maxLength: 2});
-	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	form.appendChild(this.createLabelInputPair("Job Time Limit: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
 
 	// Requeueable
 	this.inputs.requeue = this.newElement("checkbox", {checked: 1});
@@ -223,9 +220,9 @@ ScriptGen.prototype.createForm = function(doc) {
 	return form;
 };
 
-function updateVisibility(event){	
+ScriptGen.prototype.updateVisibility = function(event){	
 	// update gres and number of gpus visibility
-  var partitions = document.querySelectorAll(".sg_input_partition_container input[type='radio']");
+  var partitions = document.querySelectorAll(".input_partition_container input[type='radio']");
   var gresSection = document.getElementById("GRES");
 	var gpuSection = document.getElementById("Number of GPUs");
 
@@ -236,8 +233,8 @@ function updateVisibility(event){
   gpuSection.style.display = showGPU ? 'block' : 'none';
 
 	// update constraint visibility
-	var gres = document.querySelectorAll(".sg_input_gres_container input[type='radio']");
-	var gresContainers = document.getElementsByClassName("sg_input_gres_container");
+	var gres = document.querySelectorAll(".input_gres_container input[type='radio']");
+	var gresContainers = document.getElementsByClassName("input_gres_container");
   var constraintSection = document.getElementById("Constraint");
   
 	var checkedGRESRadio = Array.from(gres).find(radio => radio.checked);
@@ -257,13 +254,13 @@ function updateVisibility(event){
 
 	// set defaults for num gpu
 	if (!showGPU) {
-		var numGPUsInputs = document.getElementsByClassName("sg_input_gpus")[0];
+		var numGPUsInputs = document.getElementsByClassName("input_gpus")[0];
 		numGPUsInputs.value = 0;
 	}
 
 	// deselect constraint radios when constraint is hidden
 	if (!showConstraint) {
-		var constraintRadios = document.querySelectorAll(".sg_input_constraint_container input[type='radio']");
+		var constraintRadios = document.querySelectorAll(".input_constraint_container input[type='radio']");
 		constraintRadios.forEach(radio => {
 			radio.checked = false;
 		});
@@ -278,9 +275,9 @@ function updateVisibility(event){
 		}
 	});
 
-	var numTasksInputs = document.getElementsByClassName("sg_input_tasks")[0];
-	var numNodesInputs = document.getElementsByClassName("sg_input_nodes")[0];
-	var numGPUsInputs = document.getElementsByClassName("sg_input_gpus")[0];
+	var numTasksInputs = document.getElementsByClassName("input_tasks")[0];
+	var numNodesInputs = document.getElementsByClassName("input_nodes")[0];
+	var numGPUsInputs = document.getElementsByClassName("input_gpus")[0];
 
 	// set default values on partition change
 	switch (checkedPartition) {
@@ -302,6 +299,7 @@ function updateVisibility(event){
 			break;
 	}
 
+	// update memory label based on num_nodes
 	var memory_label = document.querySelector("label[for='Total Memory']");
 	if (numNodesInputs.value == 1) {
 			memory_label.textContent = "Total Memory: ";
@@ -311,7 +309,6 @@ function updateVisibility(event){
 }
 
 ScriptGen.prototype.retrieveValues = function() {
-	console.log("Retrieving values");
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
 
 	this.values.partitions = [];
@@ -506,33 +503,46 @@ ScriptGen.prototype.updateJobscript = function() {
 	if (!isValidConfiguration) {
 		return;
 	}
-	updateVisibility();
+
 	this.updateSU();
+	this.updateVisibility();
 	this.toJobScript();
 };
 
 ScriptGen.prototype.updateSU = function() {
+	var suDiv = document.getElementById("su");
+
 	var suAfton = calculateSU(this.values)[0];
 	var suRivanna = calculateSU(this.values)[1];
 
-	var suAftonDiv = document.getElementById("sg_su_afton");
+	var suAftonDiv = document.getElementById("su_afton");
 	if(suAftonDiv) {
-		suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
+		if (suAfton == 0 || isNaN(suAfton)) {
+			suAftonDiv.style.display = "none";
+		} else {
+			suAftonDiv.style.display = "block";
+			suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
+		}
 	} else {
 		suAftonDiv = document.createElement("div");
-		suAftonDiv.id = "sg_su_afton";
+		suAftonDiv.id = "su_afton";
 		suAftonDiv.textContent = "Service Units (Afton): " + suAfton;
-		this.containerDiv.appendChild(suAftonDiv);
+		this.suDiv.appendChild(suAftonDiv);
 	}
 
-	var suRivannaDiv = document.getElementById("sg_su_rivanna");
+	var suRivannaDiv = document.getElementById("su_rivanna");
 	if(suRivannaDiv) {
-		suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
+		if (suRivanna == 0 || isNaN(suRivanna)) {
+			suRivannaDiv.style.display = "none";
+		} else {
+			suRivannaDiv.style.display = "block";
+			suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna
+		}
 	} else {
 		suRivannaDiv = document.createElement("div");
-		suRivannaDiv.id = "sg_su_rivanna";
+		suRivannaDiv.id = "su_rivanna";
 		suRivannaDiv.textContent = "Service Units (Rivanna): " + suRivanna;
-		this.containerDiv.appendChild(suRivannaDiv);
+		this.suDiv.appendChild(suRivannaDiv);
 	}
 }
 
@@ -595,22 +605,13 @@ function calculateSU(values) {
 }
 
 ScriptGen.prototype.init = function() {
-	this.inputDiv = document.createElement("div");
-	this.inputDiv.id = "sg_input_container";
-	this.containerDiv.appendChild(this.inputDiv);
-
-	var scriptHeader = document.createElement("h1");
-	scriptHeader.id = "sg_script_header";
-	scriptHeader.appendChild(document.createTextNode("Job Script"));
-	this.containerDiv.appendChild(scriptHeader);
+	this.inputDiv = document.getElementById("jobScriptForm");
 
 	this.form = this.createForm();
 	this.inputDiv.appendChild(this.form);
 
-	this.jobScriptDiv = document.createElement("div");
-	this.jobScriptDiv.id = "sg_jobscript";
+	this.jobScriptDiv = document.getElementById("jobScript");
 	this.jobScriptDiv.style.position = "relative";
-	this.containerDiv.appendChild(this.jobScriptDiv);
 
 	var copyButton = document.createElement("button");
 	copyButton.id = "copyButton";
@@ -626,8 +627,10 @@ ScriptGen.prototype.init = function() {
 	this.jobScriptDiv.appendChild(pre);
 	this.jobScriptDiv.querySelector("pre").appendChild(code);
 
+
+	this.suDiv = document.getElementById("su");
+
 	this.updateJobscript();
-	this.updateSU();
 };
 
 ScriptGen.prototype.toJobScript = function() {
