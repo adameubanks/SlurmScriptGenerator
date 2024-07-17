@@ -580,6 +580,12 @@ function calculateSU(values) {
 				var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
 			}
 			break;
+		case "parallel":
+			mcore = tmem / ncpu;
+			totmem = ncore * mcore;
+			su_A = nhour * (ncore * R_c_Afton + totmem * R_m_Afton);
+			su_R = 0;
+			break;
 		default:
 			// Calculate SU for standard partiton by default
 			var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
