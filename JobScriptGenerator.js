@@ -89,7 +89,7 @@ ScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
 	var label = document.createElement("label");
 	label.className = "input-label";
 	label.htmlFor = div.id;
-	label.appendChild(document.createTextNode(labelText));
+	label.innerHTML = labelText;
 	div.appendChild(label);
 	div.appendChild(inputElement);
 
@@ -127,7 +127,7 @@ ScriptGen.prototype.createForm = function(doc) {
 		partition_container.appendChild(name_span);
 		partitions_span.appendChild(partition_container);
 	}
-	form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
+	form.appendChild(this.createLabelInputPair("Partitions<sup><a href='https://www.rc.virginia.edu/userinfo/hpc/overview/#job-queues' target='_blank'>[?]</a></sup>: ", partitions_span));
 
 	// Number of GPUs
 	this.inputs.num_gpus = this.newElement("text", {type: "number", value: 0, size: 4, class: "input_gpus"});
@@ -230,7 +230,7 @@ ScriptGen.prototype.updateVisibility = function(event){
 
   var checkedPartition = Array.from(partitions).find(radio => radio.checked).value;
   var showGPU = checkedPartition && (checkedPartition === 'gpu' || checkedPartition === 'interactive');
-
+	
   gresSection.style.display = showGPU ? 'inline-flex' : 'none';
   gpuSection.style.display = showGPU ? 'block' : 'none';
 
@@ -353,6 +353,7 @@ ScriptGen.prototype.retrieveValues = function() {
 	this.values.partitions.forEach(partition => {
 		switch (partition) {
 			case "standard":
+				// Check for standard partition constraints
 				if (this.values.tasks_per_node > 1000) {
 					this.inputs.tasks_per_node.value = 1000;
 					showAlert("Maximum Cores (GPU) per User for standard partition exceeded.");
@@ -365,6 +366,7 @@ ScriptGen.prototype.retrieveValues = function() {
 				isValidConfiguration = false;
 				break;
 			case "interactive":
+				// Check for interactive partition constraints
 				if (this.values.tasks_per_node > 24) {
 					this.inputs.tasks_per_node.value = 24;
 					showAlert("Maximum Cores (GPU) per User for interactive partition exceeded.");
@@ -394,6 +396,9 @@ ScriptGen.prototype.retrieveValues = function() {
 				break;
 			case "gpu":
 				// Check for gpu partition constraints
+				if (this.values.gpus == 0) {
+					this.inputs.num_gpus.value = 1;
+				}
 				if (this.values.gpus > 32) {
 					this.inputs.num_gpus.value = 32;
 					showAlert("Maximum gres per gpu for gpu partition exceeded.");
@@ -624,7 +629,7 @@ function calculateSU(values) {
 					R_G = 0;
 			}
 			su_A = nhour * ngcore * R_G;
-			su_R = nhour * ngcore * R_G;
+			su_R = NaN;
 			break;
 		default:
 			// Calculate SU for standard partiton by default
@@ -639,6 +644,8 @@ ScriptGen.prototype.init = function() {
 
 	this.form = this.createForm();
 	this.inputDiv.appendChild(this.form);
+
+	this.suDiv = document.getElementById("su");
 
 	this.jobScriptDiv = document.getElementById("jobScript");
 	this.jobScriptDiv.style.position = "relative";
@@ -657,9 +664,6 @@ ScriptGen.prototype.init = function() {
 	this.jobScriptDiv.appendChild(pre);
 	this.jobScriptDiv.querySelector("pre").appendChild(code);
 
-
-	this.suDiv = document.getElementById("su");
-
 	this.updateJobscript();
 };
 
@@ -674,10 +678,36 @@ ScriptGen.prototype.toJobScript = function() {
 		icon.classList.remove('fa-copy');
 		icon.classList.add('fa-check');
 		setTimeout(() => {
-				icon.classList.remove('fa-check');
-				icon.classList.add('fa-copy');
+			icon.classList.remove('fa-check');
+			icon.classList.add('fa-copy');
 		}, 1000);
 		navigator.clipboard.writeText(scr);
+	});
+
+	// Remove existing download button if it exists
+	var existingDownloadButton = document.getElementById("downloadButton");
+	if (existingDownloadButton) {
+		this.jobScriptDiv.removeChild(existingDownloadButton);
+	}
+
+	// Create a new download button
+	var downloadButton = document.createElement("button");
+	downloadButton.id = "downloadButton";
+	downloadButton.className = "download-button";
+	downloadButton.textContent = "Download Script";
+	this.jobScriptDiv.appendChild(downloadButton);
+
+	// Add download button
+	downloadButton.addEventListener('click', () => {
+		const blob = new Blob([scr], { type: 'text/plain' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'jobScript.slurm';
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
 	});
 };
 

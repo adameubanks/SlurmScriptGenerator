@@ -18,26 +18,29 @@
     <div id="jobScriptGenerator">
         <div id="jobScriptForm"></div>
         <br>
-        <div id="su"><h4>Calculated Service Units (SU)</h4></div>
-        <div id="jobScript"><h1>Job Script</h1></div>
+        <div id="su">
+            <h4>Calculated Service Units (SU)
+                <sup><a href="https://www.rc.virginia.edu/userinfo/pricing/" target="_blank">[?]</a></sup>
+            </h4>
+        </div>
+        <div id="jobScript">
+            <h1>Job Script</h1>
+        </div>
     </div>
     <script type="text/javascript">
         var script_gen = new ScriptGen(document.getElementById("jobScriptGenerator"));
 
         script_gen.settings.partitions = {
             names: ["standard", "parallel", "interactive", "gpu"],
-            show: true
         };
 
         script_gen.settings.gres = {
             //first 2 are for interactive, everything else for gpu
             names: ["RTX3090", "RTX2080", "a6000", "a40", "a100",  "v100"],
-            show: true
         };
 
         script_gen.settings.constraints = {
             names: ["40gb", "80gb"], 
-            show: true
         }
         
         script_gen.init();
