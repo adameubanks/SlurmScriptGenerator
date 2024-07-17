@@ -594,7 +594,7 @@ function calculateSU(values) {
 			}
 			break;
 		case "parallel":
-			mcore = tmem / ncpu;
+			mcore = tmem;
 			totmem = ncore * mcore;
 			su_A = nhour * (ncore * R_c_Afton + totmem * R_m_Afton);
 			su_R = 0;
