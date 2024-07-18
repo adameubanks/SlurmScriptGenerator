@@ -129,12 +129,6 @@ ScriptGen.prototype.createForm = function(doc) {
 	}
 	form.appendChild(this.createLabelInputPair("Partitions<sup><a href='https://www.rc.virginia.edu/userinfo/hpc/overview/#job-queues' target='_blank'>[?]</a></sup>: ", partitions_span));
 
-	// Number of GPUs
-	this.inputs.num_gpus = this.newElement("text", {type: "number", value: 0, size: 4, class: "input_gpus"});
-	var gpu_label = this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus);
-	gpu_label.style.display = "none";
-	form.appendChild(gpu_label);
-
 	// GRES
 	this.inputs.gres = [];
 	var gres_span = this.newSpan("input_gres");
@@ -197,6 +191,12 @@ ScriptGen.prototype.createForm = function(doc) {
 	this.inputs.cpus_per_task = this.newElement("text", {type: "number", value: 1, min: 1, class: "input_cpus"});
 	form.appendChild(this.createLabelInputPair("CPUs (cores) per task: ", this.inputs.cpus_per_task));
 
+	// Number of GPUs
+	this.inputs.num_gpus = this.newElement("text", {type: "number", value: 0, size: 4, class: "input_gpus"});
+	var gpu_label = this.createLabelInputPair("GPUs per node: ", this.inputs.num_gpus);
+	gpu_label.style.display = "none";
+	form.appendChild(gpu_label);	
+
 	// Memory per processor core
 	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 1, size: 6, class: "input_mem", id: "mem_per_core"});
 	this.inputs.mem_units = this.newSelect({id: "mem_units", options: [["GB", "GB"], ["MB", "MB"]]});
@@ -226,7 +226,7 @@ ScriptGen.prototype.updateVisibility = function(event){
 	// update gres and number of gpus visibility
   var partitions = document.querySelectorAll(".input_partition_container input[type='radio']");
   var gresSection = document.getElementById("GRES");
-	var gpuSection = document.getElementById("Number of GPUs");
+	var gpuSection = document.getElementById("GPUs per node");
 
   var checkedPartition = Array.from(partitions).find(radio => radio.checked).value;
   var showGPU = checkedPartition && (checkedPartition === 'gpu' || checkedPartition === 'interactive');
@@ -439,16 +439,16 @@ function showAlert(message) {
 }
 
 ScriptGen.prototype.generateScriptSLURM = function () {
-	var scr = "#!/bin/bash\n\n#Submit this script with: sbatch thefilename\n\n";
+	var scr = "#!/bin/bash\n\n#Submit this script with: sbatch myjob.slurm\n\n";
 	var sbatch = function sbatch(txt) {
 		scr += "#SBATCH " + txt + "\n";
 	};
 	
-	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":00   # walltime");
+	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":00   # job time limit");
 
 	// Add SLURM directives for number of nodes and tasks per node
 	sbatch("--nodes="+this.inputs.num_nodes.value+"   # number of nodes");
-	sbatch("--ntasks-per-node="+this.inputs.tasks_per_node.value+"   # number of processor cores (i.e. tasks)");
+	sbatch("--ntasks-per-node="+this.inputs.tasks_per_node.value+"   # number of processes per node (i.e. tasks)");
 	sbatch("--cpus-per-task="+this.inputs.cpus_per_task.value+"   # number of CPU cores per task");
 
 	if(this.inputs.num_gpus.value > 0) {
@@ -496,7 +496,7 @@ ScriptGen.prototype.generateScriptSLURM = function () {
 	if(!this.inputs.requeue.checked)
 		sbatch("--no-requeue   # prevents job returning to queue after node failure");
 	if(this.inputs.group_name.value != '') {
-		sbatch("--account=" + this.inputs.group_name.value);
+		sbatch("--account=" + this.inputs.group_name.value + "   # allocation name");
 	}
 
 	scr += "\n\n# LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE\n";
@@ -703,7 +703,7 @@ ScriptGen.prototype.toJobScript = function() {
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = 'jobScript.slurm';
+		a.download = 'myjob.slurm';
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
