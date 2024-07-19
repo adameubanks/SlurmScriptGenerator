@@ -32,6 +32,7 @@ ScriptGen.prototype.newElement = function(type, args) {
 			if(args.type) newEl.type = args.type
 			if(args.class)newEl.className = args.class;
 			if(args.id)newEl.id = args.id;
+			if(args.name) newEl.name = args.name;
 			break;
 		default:
 			newEl.type = "text";
@@ -219,20 +220,40 @@ ScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
+	// Cluster
+	this.inputs.cluster = this.newSelect({id: "cluster_select", options: [["Default", "Default"], ["Rivanna", "Rivanna"], ["Afton", "Afton"]]});
+	form.appendChild(this.createLabelInputPair("Cluster: ", this.newSpan(null, this.inputs.cluster)));
+
+	// Other slurm options
+	this.inputs.other_options = this.newElement("checkbox", {id: "other_options", checked: 0});
+	form.appendChild(this.createLabelInputPair("Show additional SLURM options: ", this.inputs.other_options));
+
+	// Custom Command
+	this.inputs.custom_command = this.newElement("text", {type: "text", value: "", name: "custom_command"});
+	form.appendChild(this.createLabelInputPair("Custom Command: ", this.inputs.custom_command));
+	
 	return form;
 };
 
 ScriptGen.prototype.updateVisibility = function(event){	
-	// update gres and number of gpus visibility
+	// update custom command visibility
+	var customCommand = document.getElementById("Custom Command");
+	var showCustomCommand = this.inputs.other_options.checked;
+	customCommand.style.display = showCustomCommand ? 'block' : 'none';
+
+	// update gres, cluster, and number of gpus visibility
   var partitions = document.querySelectorAll(".input_partition_container input[type='radio']");
   var gresSection = document.getElementById("GRES");
 	var gpuSection = document.getElementById("GPUs per node");
-
+	var clusterSection = document.getElementById("Cluster");
   var checkedPartition = Array.from(partitions).find(radio => radio.checked).value;
   var showGPU = checkedPartition && (checkedPartition === 'gpu' || checkedPartition === 'interactive');
 	
   gresSection.style.display = showGPU ? 'inline-flex' : 'none';
   gpuSection.style.display = showGPU ? 'block' : 'none';
+
+	showCluster = checkedPartition && (checkedPartition === 'standard' || checkedPartition === 'interactive');
+	clusterSection.style.display = showCluster ? 'block' : 'none';
 
 	// update constraint visibility
 	var gres = document.querySelectorAll(".input_gres_container input[type='radio']");
@@ -254,10 +275,18 @@ ScriptGen.prototype.updateVisibility = function(event){
     }
   });
 
-	// set defaults for num gpu
+	// set defaults for num gpu, cluster, custom command
 	if (!showGPU) {
 		var numGPUsInputs = document.getElementsByClassName("input_gpus")[0];
 		numGPUsInputs.value = 0;
+	}
+	if (!showCluster) {
+		var clusterSelect = document.getElementById("cluster_select");
+		clusterSelect.value = "Default";
+	}
+	if (!showCustomCommand) {
+		var customCommandInput = document.getElementsByName("custom_command")[0];
+		customCommandInput.value = "";
 	}
 
 	// deselect constraint radios when constraint is hidden
@@ -280,6 +309,7 @@ ScriptGen.prototype.updateVisibility = function(event){
 	var numTasksInputs = document.getElementsByClassName("input_tasks")[0];
 	var numNodesInputs = document.getElementsByClassName("input_nodes")[0];
 	var numGPUsInputs = document.getElementsByClassName("input_gpus")[0];
+	var clusterSelect = document.getElementById("cluster_select");
 
 	// set default values on partition change
 	switch (checkedPartition) {
@@ -294,10 +324,12 @@ ScriptGen.prototype.updateVisibility = function(event){
 		case "parallel":
 			numTasksInputs.value = Math.min(numTasksInputs.value, 6000); // Ensure tasks_per_node does not exceed 6000
 			numNodesInputs.value = Math.max(2, Math.min(numNodesInputs.value, 64)); // Ensure num_nodes is between 2 and 64
+			clusterSelect.value = "Default";
 			break;
 		case "gpu":
 			numGPUsInputs.value = Math.min(numGPUsInputs.value, 32); // Ensure gpus does not exceed 32
 			numNodesInputs.value = Math.min(numNodesInputs.value, 4); // Ensure num_nodes does not exceed 4
+			clusterSelect.value = "Default";
 			break;
 	}
 
@@ -347,6 +379,10 @@ ScriptGen.prototype.retrieveValues = function() {
 	this.values.sendemail.end = this.inputs.email_end.checked;
 	this.values.sendemail.abort = this.inputs.email_abort.checked;
 	this.values.email_address = this.inputs.email_address.value;
+
+	this.values.cluster = this.inputs.cluster.options[this.inputs.cluster.selectedIndex].text.toLowerCase();
+
+	this.values.custom_command = this.inputs.custom_command.value;
 
 	// Check if values are valid
 	let isValidConfiguration = true;
@@ -495,8 +531,17 @@ ScriptGen.prototype.generateScriptSLURM = function () {
 
 	if(!this.inputs.requeue.checked)
 		sbatch("--no-requeue   # prevents job returning to queue after node failure");
+
+	if(this.values.cluster != "default") {
+		sbatch("--constraint=" + this.values.cluster + "   # cluster");
+	}
+
 	if(this.inputs.group_name.value != '') {
 		sbatch("--account=" + this.inputs.group_name.value + "   # allocation name");
+	}
+
+	if(this.inputs.custom_command.value != '') {
+		scr += this.inputs.custom_command.value + "\n";
 	}
 
 	scr += "\n\n# LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE\n";
@@ -629,7 +674,7 @@ function calculateSU(values) {
 					R_G = 0;
 			}
 			su_A = nhour * ngcore * R_G;
-			su_R = NaN;
+			su_R = nhour * ngcore * R_G; //NaN;
 			break;
 		default:
 			// Calculate SU for standard partiton by default
@@ -657,7 +702,6 @@ ScriptGen.prototype.init = function() {
 	copyIcon.color = "#454545";
 	copyButton.appendChild(copyIcon);
 	this.jobScriptDiv.appendChild(copyButton);
-
 
 	var pre = document.createElement("pre");
 	var code = document.createElement("code");
