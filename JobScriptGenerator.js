@@ -252,7 +252,8 @@ ScriptGen.prototype.updateVisibility = function(event){
   gresSection.style.display = showGPU ? 'inline-flex' : 'none';
   gpuSection.style.display = showGPU ? 'block' : 'none';
 
-	showCluster = checkedPartition && (checkedPartition === 'standard' || checkedPartition === 'interactive');
+	var numGPUsInputs = document.getElementsByClassName("input_gpus")[0];
+	showCluster = checkedPartition && (checkedPartition === 'standard' || (checkedPartition === 'interactive' && numGPUsInputs.value == 0));
 	clusterSection.style.display = showCluster ? 'block' : 'none';
 
 	// update constraint visibility
@@ -277,7 +278,6 @@ ScriptGen.prototype.updateVisibility = function(event){
 
 	// set defaults for num gpu, cluster, custom command
 	if (!showGPU) {
-		var numGPUsInputs = document.getElementsByClassName("input_gpus")[0];
 		numGPUsInputs.value = 0;
 	}
 	if (!showCluster) {
