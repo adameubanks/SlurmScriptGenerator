@@ -217,7 +217,7 @@ ScriptGen.prototype.createForm = function(doc) {
 	this.inputs.email_end = this.newElement("checkbox", {id: "end", checked: 0});
 	this.inputs.email_abort = this.newElement("checkbox", {id: "abort", checked: 0});
 	this.inputs.email_address = this.newElement("text", {value: ""});
-	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
+	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " fail")));
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
 	// Cluster
