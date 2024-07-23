@@ -128,7 +128,7 @@ ScriptGen.prototype.createForm = function(doc) {
 		partition_container.appendChild(name_span);
 		partitions_span.appendChild(partition_container);
 	}
-	form.appendChild(this.createLabelInputPair("Partitions<sup><a href='https://www.rc.virginia.edu/userinfo/hpc/overview/#job-queues' target='_blank'>[?]</a></sup>: ", partitions_span));
+	form.appendChild(this.createLabelInputPair("Partitions<sup><a href='https://www.rc.virginia.edu/userinfo/hpc/#job-queues' target='_blank'>[?]</a></sup>: ", partitions_span));
 
 	// GRES
 	this.inputs.gres = [];
