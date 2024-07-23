@@ -15,6 +15,7 @@ ScriptGen.prototype.newElement = function(type, args) {
 	switch(type) {
 		case "checkbox":
 			newEl.type = "checkbox";
+			newEl.name = args.name;
 			newEl.id = args.id;
 			if(args.checked) newEl.checked = true;
 			break;
@@ -208,10 +209,6 @@ ScriptGen.prototype.createForm = function(doc) {
 	this.inputs.wallmins = this.newElement("text", {value: "00", size: 2, maxLength: 2, id: "wallmins"});
 	form.appendChild(this.createLabelInputPair("Job Time Limit: ", this.newSpan("job_time_limit", this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ")));
 
-	// Requeueable
-	this.inputs.requeue = this.newElement("checkbox", {checked: 1});
-	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.requeue));
-
 	// Email
 	this.inputs.email_begin = this.newElement("checkbox", {id: "begin", checked: 0});
 	this.inputs.email_end = this.newElement("checkbox", {id: "end", checked: 0});
@@ -231,15 +228,21 @@ ScriptGen.prototype.createForm = function(doc) {
 	// Custom Command
 	this.inputs.custom_command = this.newElement("text", {type: "text", value: "", name: "custom_command"});
 	form.appendChild(this.createLabelInputPair("Custom Command: ", this.inputs.custom_command));
+
+	// Requeueable
+	this.inputs.requeue = this.newElement("checkbox", {checked: 1, name: "requeue"});
+	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.requeue));
 	
 	return form;
 };
 
 ScriptGen.prototype.updateVisibility = function(event){	
-	// update custom command visibility
+	// update advanced options visibility
 	var customCommand = document.getElementById("Custom Command");
-	var showCustomCommand = this.inputs.other_options.checked;
-	customCommand.style.display = showCustomCommand ? 'block' : 'none';
+	var requeueable = document.getElementById("Job is requeueable");
+	var showAdvanced = this.inputs.other_options.checked;
+	customCommand.style.display = showAdvanced ? 'block' : 'none';
+	requeueable.style.display = showAdvanced ? 'block' : 'none';
 
 	// update gres, cluster, and number of gpus visibility
   var partitions = document.querySelectorAll(".input_partition_container input[type='radio']");
@@ -284,9 +287,11 @@ ScriptGen.prototype.updateVisibility = function(event){
 		var clusterSelect = document.getElementById("cluster_select");
 		clusterSelect.value = "Default";
 	}
-	if (!showCustomCommand) {
+	if (!showAdvanced) {
 		var customCommandInput = document.getElementsByName("custom_command")[0];
 		customCommandInput.value = "";
+		var requeueCheckbox = document.getElementsByName("requeue")[0];
+		requeueCheckbox.checked = true;
 	}
 
 	// deselect constraint radios when constraint is hidden
