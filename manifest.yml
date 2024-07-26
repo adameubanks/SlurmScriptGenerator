@@ -1,0 +1,5 @@
+name: Slurm Script Generator
+description: Generate Slurm scripts for running jobs on UVA's HPC clusters.
+icon: fas://file-code
+category: Files
+subcategory: Utilities
