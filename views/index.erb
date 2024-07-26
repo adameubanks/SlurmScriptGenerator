@@ -3,19 +3,26 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
   <style>
-  html, body {
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-  }
-  .container {
-    height: 100%;
-  }
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    nav {
+      flex-shrink: 0;
+    }
+    .iframe-container {
+      flex-grow: 1;
+      display: flex;
+    }
+    iframe {
+      flex-grow: 1;
+      border: none;
+    }
   </style>
 </head>
 <body>  
@@ -25,6 +32,8 @@
       <span class="navbar-toggler-icon"></span>
     </button>
   </nav>
+  <div class="iframe-container">
     <iframe src="https://adameubanks.github.io/UVASlurmScriptGenerator/"></iframe>
+  </div>
 </body>
 </html>
