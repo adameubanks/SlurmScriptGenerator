@@ -489,7 +489,7 @@ ScriptGen.prototype.generateScriptSLURM = function () {
 
 	// Add SLURM directives for number of nodes and tasks per node
 	sbatch("--nodes="+this.inputs.num_nodes.value+"   # number of nodes");
-	sbatch("--ntasks-per-node="+this.inputs.tasks_per_node.value+"   # number of processes per node (i.e. tasks)");
+	sbatch("--ntasks-per-node="+this.inputs.tasks_per_node.value+"   # number of tasks per node");
 	sbatch("--cpus-per-task="+this.inputs.cpus_per_task.value+"   # number of CPU cores per task");
 
 	if(this.inputs.num_gpus.value > 0) {
@@ -511,7 +511,7 @@ ScriptGen.prototype.generateScriptSLURM = function () {
 
 	if(this.values.partitions.length > 0) {
 		var partitions = this.values.partitions.join(",");
-		sbatch("-p " + partitions + "   # partition(s)");
+		sbatch("--partition " + partitions + "   # partition(s)");
 	}
 
 	if (this.inputs.num_nodes.value == 1) {

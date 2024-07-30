@@ -16,16 +16,18 @@
     <h1 class="mb-4">Slurm Job Script Generator</h1>
     <div id="alert-container"></div>
     <div id="jobScriptGenerator">
-        <div id="jobScriptForm"></div>
+        <div id="jobScriptForm">
+            <h2>Parameters</h2>
+        </div>
         <br>
-        <div id="su">
-            <h4>Calculated Service Units (SU)
-                <sup><a href="https://www.rc.virginia.edu/userinfo/pricing/" target="_blank">[?]</a></sup>
-            </h4>
-        </div>
         <div id="jobScript">
-            <h1>Job Script</h1>
+            <h2>Script</h2>
         </div>
+    </div>
+    <div id="su">
+        <h4>Calculated Service Units (SU)
+            <sup><a href="https://www.rc.virginia.edu/userinfo/pricing/" target="_blank">[?]</a></sup>
+        </h4>
     </div>
     <script type="text/javascript">
         var script_gen = new ScriptGen(document.getElementById("jobScriptGenerator"));

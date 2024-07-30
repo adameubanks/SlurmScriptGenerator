@@ -13,6 +13,23 @@ h1 {
 	padding: 30px;
 	border-radius: 8px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+#jobScriptGenerator {
+	display: flex;
+	flex-wrap: wrap;
+}
+#jobScriptForm, #jobScript {
+	flex: 1;
+	min-width: 300px;
+	padding: 10px;
+}
+
+#su {
+	text-align: right;
 }
 
 /* Input form styling */
@@ -125,7 +142,7 @@ input[type="checkbox"] {
 /* Copy button styling */
 #copyButton {
 	position: absolute;
-	right: 0;
+	right: 10px;
 	color:#4b4b4b;
 	border: 0px;
 	outline: none;
