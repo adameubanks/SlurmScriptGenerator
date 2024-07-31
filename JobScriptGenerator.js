@@ -27,6 +27,7 @@ ScriptGen.prototype.newElement = function(type, args) {
 			break;
 		case "text":
 			newEl.type = "text";
+			if(args.min) newEl.min = args.min;
 			if(args.size) newEl.size = args.size;
 			if(args.maxLength) newEl.maxLength = args.maxLength;
 			if(args.value) newEl.value = args.value;
@@ -79,7 +80,6 @@ ScriptGen.prototype.newSpan = function() {
 			newEl.appendChild(arguments[i]);
 		}
 	}
-
 	return newEl;
 };
 
@@ -479,11 +479,12 @@ function showAlert(message) {
 	alertContainer.innerHTML += alertHTML;
 }
 
-ScriptGen.prototype.generateScriptSLURM = function () {
+ScriptGen.prototype.generateSLURMScript = function () {
 	var scr = "#!/bin/bash\n\n#Submit this script with: sbatch myjob.slurm\n\n";
 	var sbatch = function sbatch(txt) {
 		scr += "#SBATCH " + txt + "\n";
 	};
+
 	
 	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":00   # job time limit");
 
@@ -492,12 +493,17 @@ ScriptGen.prototype.generateScriptSLURM = function () {
 	sbatch("--ntasks-per-node="+this.inputs.tasks_per_node.value+"   # number of tasks per node");
 	sbatch("--cpus-per-task="+this.inputs.cpus_per_task.value+"   # number of CPU cores per task");
 
-	if(this.inputs.num_gpus.value > 0) {
-		if(this.values.gres.length > 0) {
-			var gres = this.values.gres.join(",")
-			sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value + "   # gpu devices per node");
+	if (this.values.partitions[0] == "gpu" || this.values.partitions[0] == "interactive") {
+		if(this.inputs.num_gpus.value > 0 && this.values.gres.length > 0) {
+				var gres = this.values.gres.join(",")
+				sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value + "   # gpu devices per node");
+		} else if (this.inputs.num_gpus.value > 0 && this.values.gres.length == 0) {
+				sbatch("--gres=gpu:" + this.inputs.num_gpus.value + "   # gpu devices per node");
+		} else if (this.inputs.num_gpus.value == 0 && this.values.gres.length > 0) {
+				var gres = this.values.gres.join(",")
+				sbatch("--gres=gpu:" + gres + "   # gpu devices per node");
 		} else {
-			sbatch("--gres=gpu:" + this.inputs.num_gpus.value + "   # gpu devices per node");
+			sbatch("--gres=gpu   # gpu devices per node");
 		}
 	}
 
@@ -511,7 +517,7 @@ ScriptGen.prototype.generateScriptSLURM = function () {
 
 	if(this.values.partitions.length > 0) {
 		var partitions = this.values.partitions.join(",");
-		sbatch("--partition " + partitions + "   # partition(s)");
+		sbatch("--partition " + partitions + "   # partition");
 	}
 
 	if (this.inputs.num_nodes.value == 1) {
@@ -717,7 +723,7 @@ ScriptGen.prototype.init = function() {
 };
 
 ScriptGen.prototype.toJobScript = function() {
-	var scr = this.generateScriptSLURM();
+	var scr = this.generateSLURMScript();
 	var pre = this.jobScriptDiv.querySelector("pre");
 	pre.querySelector("code").textContent = scr;
 
