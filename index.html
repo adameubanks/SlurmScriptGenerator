@@ -15,28 +15,39 @@
 <div class="container mt-5">
     <h1 class="mb-4">Slurm Job Script Generator</h1>
     <div id="alert-container"></div>
-    <div id="JobScriptGenerator"></div>
+    <div id="jobScriptGenerator">
+        <div id="jobScriptForm">
+            <h2>Parameters</h2>
+        </div>
+        <br>
+        <div id="jobScript">
+            <h2>Script</h2>
+        </div>
+    </div>
+    <div id="su">
+        <h4>Calculated Service Units (SU)
+            <sup><a href="https://www.rc.virginia.edu/userinfo/pricing/" target="_blank">[?]</a></sup>
+        </h4>
+    </div>
     <script type="text/javascript">
-        var script_gen = new ScriptGen(document.getElementById("JobScriptGenerator"));
+        var script_gen = new ScriptGen(document.getElementById("jobScriptGenerator"));
 
         script_gen.settings.partitions = {
             names: ["standard", "parallel", "interactive", "gpu"],
-            show: true
         };
 
         script_gen.settings.gres = {
             //first 2 are for interactive, everything else for gpu
             names: ["RTX3090", "RTX2080", "a6000", "a40", "a100",  "v100"],
-            show: true
         };
 
         script_gen.settings.constraints = {
             names: ["40gb", "80gb"], 
-            show: true
         }
         
         script_gen.init();
     </script>
 </div>
+<br><br><br>
 </body>
 </html>
