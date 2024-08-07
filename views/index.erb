@@ -1,8 +1,27 @@
 <html>
 <head>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
-  <style>
+  <title>Slurm Script Generator - UVA OpenOnDemand</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/public/favicon.ico" />
+
+  <script src="/pun/sys/dashboard/assets/application-236fae757cad255084c5224d2905772a67d2181ab2a8e2ae1bb3a8393450b944.js" nonce="4EXpziO450cTWofblGS8WQ=="></script>
+  <link rel="preload stylesheet" media="all" href="/pun/sys/dashboard/assets/application-61a2626def60b5b92da2082b21be71733d493ea55ab120d99dc3030dcca4f201.css" nonce="4EXpziO450cTWofblGS8WQ==" as="style" type="text/css" />
+  <style nonce="4EXpziO450cTWofblGS8WQ==">
+    .navbar-dark {
+      background-color: #53565a;
+    }
+    .navbar-light {
+      background-color: #53565a;
+    }
+    .navbar-dark ul.navbar-nav>li.nav-item>a:focus,
+    .navbar-dark ul.navbar-nav>li.nav-item.show>a {
+      background-color: #fff;
+      border-radius: 0.25em;
+    }
+    .navbar-light ul.navbar-nav>li.nav-item>a:focus,
+    .navbar-light ul.navbar-nav>li.nav-item.show>a {
+      background-color: #fff;
+      border-radius: 0.25em;
+    }
     html, body {
       height: 100%;
       margin: 0;
@@ -24,14 +43,247 @@
       border: none;
     }
   </style>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+  <script src="/pun/sys/dashboard/assets/dashboard-42b56f7f42474effe1e8f2d4fa0300bf463bed5d4eec7db1c70badde9070c077.js" nonce="4EXpziO450cTWofblGS8WQ=="></script>
+  <script src="/pun/sys/dashboard/assets/pinned_apps-95c603b0cc05dad1a3e420b7ced9d8e2a926cd68ea8c86eb31bbb3d1b685ada1.js" nonce="4EXpziO450cTWofblGS8WQ=="></script>
+
+  <meta name="csrf-param" content="authenticity_token" />
+  <meta name="csrf-token" content="Ww-IlCp9x1ZqDy-0PTHx0X6l5Z1WVZMdR4RHeT_nWSxT3kIinz-1FLW5UmSck_yyHotCBoWfYcqD5h1lhDNWXw" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="profile" content="">
+  <!-- configuration options exposed to javascript -->
+  <div hidden id="ood_config" data-max-file-size="10737420000" data-transfers-path="/pun/sys/dashboard/transfers.json"
+    data-jobs-info-path="/pun/sys/dashboard/jobs/info" data-uppy-locale="{}" data-bc-dynamic-js="true"></div>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
 </head>
 <body>  
-  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #53565a;">
-    <a class="navbar-brand" href="/pun/sys/dashboard/">UVA Open OnDemand</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+  <header>
+  <nav class="navbar navbar-expand-md shadow-sm navbar-color navbar-dark">
+    <ul class="navbar-nav w-100 align-items-center" role="menubar">
+      <li role="none">
+        <a class="navbar-brand" aria-current=page role='menuitem' href="/pun/sys/dashboard/">UVA OpenOnDemand</a>
+      </li>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbar">
+        <li class="nav-item dropdown" role="none">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menuitem" title="Files">
+            <span> Files</span><span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu " title="Files" role="menu">
+            <li class="dropdown-header">Utilities</li>
+            <li role="none">
+              <a title="Disk Usage" class="dropdown-item" target="_blank" role="menuitem" href="/pun/sys/dashboard/apps/show/DiskUsage">
+                <i id="" class="fas fa-chart-pie fa-fw app-icon" title="FontAwesome icon specified: chart-pie" aria-hidden="true"></i> Disk Usage
+              </a>
+            </li>
+            <li class="dropdown-divider" role="separator"></li>
+
+            <li role="none">
+              <a title="/project" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/files/fs/project">
+                <i id="" class="fas fa-folder fa-fw app-icon" title="FontAwesome icon specified: folder" aria-hidden="true"></i> /project
+              </a>
+            </li>
+            <li role="none">
+              <a title="/standard" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/files/fs/standard">
+                <i id="" class="fas fa-folder fa-fw app-icon" title="FontAwesome icon specified: folder" aria-hidden="true"></i> /standard
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown" role="none">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menuitem" title="Jobs">
+            <span> Jobs</span><span class="caret"></span>
+          </a>
+
+          <ul class="dropdown-menu " title="Jobs" role="menu">
+            <li role="none">
+              <a title="Active Jobs" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/apps/show/activejobs">
+                <i id="" class="fa fa-clock-o fa-fw app-icon" title="FontAwesome icon specified: clock-o" aria-hidden="true"></i> Active Jobs
+              </a>
+            </li>
+            <li role="none">
+              <a title="Job Composer" class="dropdown-item" target="_blank" role="menuitem" href="/pun/sys/dashboard/apps/show/myjobs">
+                <i id="" class="fas fa-magic fa-fw app-icon" title="FontAwesome icon specified: magic" aria-hidden="true"></i> Job Composer
+              </a>
+            </li>
+
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown" role="none">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="false" role="menuitem" title="Clusters">
+            <span> Clusters</span><span class="caret"></span>
+          </a>
+
+          <ul class="dropdown-menu " title="Clusters" role="menu">
+            <li role="none">
+              <a title="HPC Shell Access" class="dropdown-item" target="_blank" role="menuitem" href="/pun/sys/shell/ssh/login.hpc.virginia.edu">
+                <i id="" class="fas fa-terminal fa-fw app-icon" title="FontAwesome icon specified: terminal" aria-hidden="true"></i> HPC Shell Access
+              </a>
+            </li>
+
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown" role="none">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menuitem" title="Interactive Apps">
+            <span> Interactive Apps</span><span class="caret"></span>
+          </a>
+
+          <ul class="dropdown-menu " title="Interactive Apps" role="menu">
+            <li class="dropdown-header">Desktops</li>
+            <li role="none">
+              <a title="Desktop" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/uva_desktop/session_contexts/new">
+                <i id="" class="fa fa-desktop fa-fw app-icon" title="FontAwesome icon specified: desktop" aria-hidden="true"></i> Desktop
+              </a>
+            </li>
+            <li class="dropdown-divider" role="separator"></li>
+            <li class="dropdown-header">GUIs</li>
+            <li role="none">
+              <a title="MATHEMATICA" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/uva_mathematica/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/uva_mathematica/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/uva_mathematica/sys/sys" /> MATHEMATICA
+              </a>
+            </li>
+            <li role="none">
+              <a title="MATLAB" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/uva_matlab/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/uva_matlab/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/uva_matlab/sys/sys" /> MATLAB
+              </a>
+            </li>
+            <li role="none">
+              <a title="QGIS" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/uva_qgis/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/uva_qgis/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/uva_qgis/sys/sys" /> QGIS
+              </a>
+            </li>
+            <li class="dropdown-divider" role="separator"></li>
+            <li class="dropdown-header">Require UVA network</li>
+            <li role="none">
+              <a title="FastX Web" class="dropdown-item" target="_blank" role="menuitem" href="/pun/sys/dashboard/apps/show/fastx">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/fastx/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/fastx/sys/sys" /> FastX Web
+              </a>
+            </li>
+            <li class="dropdown-divider" role="separator"></li>
+            <li class="dropdown-header">Servers</li>
+            <li role="none">
+              <a title="Code Server" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/uva_vscode/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/uva_vscode/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/uva_vscode/sys/sys" /> Code Server
+              </a>
+            </li>
+            <li role="none">
+              <a title="CryoSPARC" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/uva_cryosparc/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/uva_cryosparc/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/uva_cryosparc/sys/sys" /> CryoSPARC
+              </a>
+            </li>
+            <li role="none">
+              <a title="JupyterLab" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/jupyter_lab/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/jupyter_lab/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/jupyter_lab/sys/sys" /> JupyterLab
+              </a>
+            </li>
+            <li role="none">
+              <a title="PySpark" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/pyspark/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/pyspark/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/pyspark/sys/sys" /> PySpark
+              </a>
+            </li>
+            <li role="none">
+              <a title="RStudio Server" class="dropdown-item" role="menuitem" href="/pun/sys/dashboard/batch_connect/sys/rstudio/session_contexts/new">
+                <img class="app-icon" title="/pun/sys/dashboard/apps/icon/rstudio/sys/sys" aria-hidden="true" src="/pun/sys/dashboard/apps/icon/rstudio/sys/sys" /> RStudio Server
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item" role="none">
+          <a title="My Interactive Sessions" class="nav-link" role="menuitem" href="/pun/sys/dashboard/batch_connect/sessions">
+            <i class="fas fa-window-restore" aria-hidden="true"></i>
+            <span class="d-sm-none d-md-none d-lg-inline"> My Interactive Sessions</span>
+          </a>
+        </li>
+
+        <!-- add some space between nav_bar and help_menu -->
+        <div class="ml-auto"></div>
+        <li class="nav-item dropdown" role="none">
+          <a href="#" title="Help" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menuitem">
+            <i class="fas fa-question-circle" aria-hidden="true"></i><span class="d-sm-none d-md-none d-lg-inline">Help</span><span class="caret"></span>
+          </a>
+
+          <ul class="dropdown-menu dropdown-menu-right" role="menu">
+            <li role="none">
+              <a title="Contact Support" class="dropdown-item" target="_blank" role="menuitem" href="https://www.rc.virginia.edu/support/">
+                <i id="" class="fa fa-question-circle fa-fw app-icon" title="FontAwesome icon specified: question-circle" aria-hidden="true"></i>
+                <span>Contact Support</span>
+              </a>
+            </li>
+            <li role="none">
+              <a title="Online Documentation" class="dropdown-item" target="_blank" role="menuitem" href="https://www.rc.virginia.edu/userinfo/user-guide/">
+                <i id="" class="fa fa-info-circle fa-fw app-icon" title="FontAwesome icon specified: info-circle" aria-hidden="true"></i>
+                <span>Online Documentation</span>
+              </a>
+            </li>
+            <li role="none">
+              <a title="Change HPC Password" class="dropdown-item" target="_blank" role="menuitem" href="https://virginia.service-now.com/its?id=itsweb_kb_article&amp;sys_id=2f47ff87dbf6c744f032f1f51d961967">
+                <i id="" class="fa fa-key fa-fw app-icon" title="FontAwesome icon specified: key" aria-hidden="true"></i>
+                <span>Change HPC Password</span>
+              </a>
+            </li>
+
+            <li role="none">
+              <a title="Restart Web Server" class="dropdown-item" role="menuitem" href="/nginx/stop?redir=/pun/sys/dashboard/">
+                <i id="" class="fas fa-sync fa-fw app-icon" title="FontAwesome icon specified: sync"aria-hidden="true"></i> Restart Web Server
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown" role="none">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menuitem" title="Utilities">
+            <i id="" class="fa fa-toolbox fa-fw menu-icon" title="FontAwesome icon specified: toolbox" aria-hidden="true"></i><span> Utilities</span><span class="caret"></span>
+          </a>
+
+          <ul class="dropdown-menu dropdown-menu-right" title="Utilities" role="menu">
+            <li role="none">
+              <a title="Disk Usage" class="dropdown-item" role="menuitem" href="https://ood1.hpc.virginia.edu/pun/dev/DiskUsage">
+                <i id="" class="fas fa-chart-pie fa-fw app-icon" title="FontAwesome icon specified: chart-pie" aria-hidden="true"></i> Disk Usage
+              </a>
+            </li>
+            <li role="none">
+              <a title="Queue Status" class="dropdown-item" role="menuitem" href="https://ood1.hpc.virginia.edu/pun/dev/QueueStatus">
+                <i id="" class="fas fa-server fa-fw app-icon" title="FontAwesome icon specified: server" aria-hidden="true"></i> Queue Status
+              </a>
+            </li>
+            <li role="none">
+              <a title="Check Scratch For Purge" class="dropdown-item" role="menuitem" href="https://ood1.hpc.virginia.edu/pun/dev/CheckScratchForPurge">
+                <i id="" class="fas fa-folder-open fa-fw app-icon" title="FontAwesome icon specified: folder-open" aria-hidden="true"></i> Check Scratch For Purge
+              </a>
+            </li>
+            <li role="none">
+              <a title="Slurm Script Generator" class="dropdown-item" role="menuitem" href="https://ood1.hpc.virginia.edu/pun/dev/UVASlurmScriptGenerator">
+                <i id="" class="fas fa-file-code fa-fw app-icon" title="FontAwesome icon specified: file-code" aria-hidden="true"></i> Slurm Script Generator
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item" data-container="body" data-toggle="popover" data-content="Logged in" data-placement="bottom" role="none">
+          <a class="nav-link disabled" role="menuitem" title="Logged in" href="#">
+            <i class="fas fa-user" aria-hidden="true" aria-hidden="true"></i><span class="d-sm-none d-md-none d-lg-inline"> Logged in</span>
+          </a>
+        </li>
+        <li class="nav-item" role="none">
+          <a class="nav-link" href="/logout" title="Log Out" role="menuitem">
+            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+            <span class="d-sm-none d-md-none d-lg-inline"> Log Out</span>
+          </a>
+        </li>
+      </div>
+    </ul>
   </nav>
+  </header>
+  <br>
   <div class="iframe-container">
     <iframe src="https://adameubanks.github.io/UVASlurmScriptGenerator/"></iframe>
   </div>
