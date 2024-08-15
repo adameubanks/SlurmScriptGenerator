@@ -566,7 +566,8 @@ ScriptGen.prototype.updateJobscript = function() {
 		return;
 	}
 
-	this.updateSU();
+	// Commented out until we generate SU
+	// this.updateSU(); 
 	this.updateVisibility();
 	this.toJobScript();
 };
