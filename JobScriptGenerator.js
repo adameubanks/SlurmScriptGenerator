@@ -566,8 +566,7 @@ ScriptGen.prototype.updateJobscript = function() {
 		return;
 	}
 
-	// Commented out until we generate SU
-	// this.updateSU(); 
+	this.updateSU(); 
 	this.updateVisibility();
 	this.toJobScript();
 };
@@ -575,8 +574,8 @@ ScriptGen.prototype.updateJobscript = function() {
 ScriptGen.prototype.updateSU = function() {
 	var suDiv = document.getElementById("su");
 
-	var suAfton = calculateSU(this.values)[0];
-	var suRivanna = calculateSU(this.values)[1];
+	var suAfton = calculateSU(this.values).Afton_Cost.toFixed(2);
+	var suRivanna = calculateSU(this.values).Rivanna_Cost.toFixed(2);
 
 	var suAftonDiv = document.getElementById("su_afton");
 	if(suAftonDiv) {
@@ -610,90 +609,68 @@ ScriptGen.prototype.updateSU = function() {
 }
 
 function calculateSU(values) {
-	var nnode = values.num_nodes;
-	var ntask = values.tasks_per_node;
-	var ncpu = values.cpus_per_task;
-	var tmem = values.MB_per_core / 1024;
-	var nhour = values.walltime_in_minutes / 60;
-	var ncore = nnode * ntask * ncpu;
-  var checkedPartition = Array.from(values.partitions)[0];
-	// Rates for Rivanna
-	var R_c_Rivanna = 1;
-	var R_m_Rivanna = 0.5;
+	const nnode = values.num_nodes;
+	const ntask = values.tasks_per_node;
+	const ncpu = values.cpus_per_task;
+	const tmem = values.MB_per_core / 1024; // Convert MB to GB
+	const nhour = values.walltime_in_minutes / 60; // Convert minutes to hours
+	const ncore = nnode * ntask * ncpu;
+	const checkedPartition = Array.from(values.partitions)[0];
 
-	// Rates for Afton
-	var R_c_Afton = 6;
-	var R_m_Afton = 1;
+	// Updated pricing model
+	const pricing = {
+		rivanna_375: { SU_CPU_hr: 0.1773454, SU_GB_hr: 0.01427272, SU_GPU_hr: 0 },
+		rivanna_750: { SU_CPU_hr: 0.12905893, SU_GB_hr: 0.00943026, SU_GPU_hr: 0 },
+		afton_standard: { SU_CPU_hr: 0.46368938, SU_GB_hr: 0.02842325, SU_GPU_hr: 0 },
+		afton_high_mem: { SU_CPU_hr: 0.41828047, SU_GB_hr: 0.02438291, SU_GPU_hr: 0 },
+		v100: { SU_CPU_hr: 0.05821547, SU_GB_hr: 0.0054577, SU_GPU_hr: 2.09575682 },
+		l_rtx2080: { SU_CPU_hr: 0.38787291, SU_GB_hr: 0.04050892, SU_GPU_hr: 7.75745811 },
+		l_rtx3090: { SU_CPU_hr: 0.30328797, SU_GB_hr: 0.07582199, SU_GPU_hr: 11.3227509 },
+		l_a6000: { SU_CPU_hr: 0.38324504, SU_GB_hr: 0.0617059, SU_GPU_hr: 14.2725737 },
+		afton_a40: { SU_CPU_hr: 0.34022142, SU_GB_hr: 0.0198326, SU_GPU_hr: 18.6689663 },
+		l_a100_40gb: { SU_CPU_hr: 0.31058399, SU_GB_hr: 0.02915348, SU_GPU_hr: 46.3805426 },
+		basepod: { SU_CPU_hr: 0.40287202, SU_GB_hr: 0.04342536, SU_GPU_hr: 50.8890976 }
+	};
 
-	// Calculate SU based on selected partition
+	let aftonCost = 0;
+	let rivannaCost = 0;
+
 	switch (checkedPartition) {
 		case "standard":
-			var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
-			var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
-			break;
-		case "interactive":
-			var ngpu = values.gpus;
-			if (ngpu > 0) {
-				var R_G;
-				switch (values.gres[0]) {
-					case "RTX2080":
-						R_G = 48;
-						break;
-					case "RTX3090":
-						R_G = 65;
-						break;
-				}
-				var ngcore = nnode * ngpu;
-				su = nhour * ngcore * R_G;
-				su_A = su;
-				su_R = su;
-			} else {
-				// If ngpu is 0, replicate the logic from the default case
-				var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
-				var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
-			}
+			rivannaCost = nhour * (ncore * pricing.rivanna_375.SU_CPU_hr + tmem * pricing.rivanna_375.SU_GB_hr);
+			aftonCost = nhour * (ncore * pricing.afton_standard.SU_CPU_hr + tmem * pricing.afton_standard.SU_GB_hr);
 			break;
 		case "parallel":
-			mcore = tmem;
-			totmem = ncore * mcore;
-			su_A = nhour * (ncore * R_c_Afton + totmem * R_m_Afton);
-			su_R = 0;
+			rivannaCost = nhour * (ncore * pricing.rivanna_750.SU_CPU_hr + tmem * pricing.rivanna_750.SU_GB_hr);
+			aftonCost = nhour * (ncore * pricing.afton_standard.SU_CPU_hr + tmem * pricing.afton_standard.SU_GB_hr);
 			break;
 		case "gpu":
-			var ngpu = values.gpus;
-			var ngcore = nnode * ngpu;
-			var R_G;
-			switch (values.gres[0]) {
-				case "v100":
-					R_G = 3;
-					break;
-				case "a6000":
-					R_G = 85;
-					break;
-				case "a40":
-					R_G = 119;
-					break;
-				case "a100":
-					var constraint = values.constraint[0];
-					if (constraint == "80gb") {
-						R_G = 434;
+		case "interactive":
+			const ngpu = values.gpus;
+			if (ngpu > 0) {
+					const ngcore = nnode * ngpu;
+					let gpuType = values.gres ? values.gres[0] : '';
+					let gpuPricing;
+					switch (gpuType) {
+						case 'v100': gpuPricing = pricing.v100; break;
+						case 'rtx2080': gpuPricing = pricing.l_rtx2080; break;
+						case 'rtx3090': gpuPricing = pricing.l_rtx3090; break;
+						case 'a6000': gpuPricing = pricing.l_a6000; break;
+						case 'a40': gpuPricing = pricing.afton_a40; break;
+						case 'a100': gpuPricing = pricing.l_a100_40gb; break;
+						default: gpuPricing = pricing.basepod;
 					}
-					else if (constraint == "40gb") {
-						R_G = 267;
-					}
-					break;
-				default:
-					R_G = 0;
+					aftonCost = nhour * (ngcore * gpuPricing.SU_GPU_hr + ncore * gpuPricing.SU_CPU_hr + tmem * gpuPricing.SU_GB_hr);
+			} else {
+				aftonCost = nhour * (ncore * pricing.afton_standard.SU_CPU_hr + tmem * pricing.afton_standard.SU_GB_hr);
 			}
-			su_A = nhour * ngcore * R_G;
-			su_R = nhour * ngcore * R_G; //NaN;
 			break;
 		default:
-			// Calculate SU for standard partiton by default
-			var su_R = nhour * (ncore * R_c_Rivanna + tmem * R_m_Rivanna);
-			var su_A = nhour * (ncore * R_c_Afton + tmem * R_m_Afton);
+			rivannaCost = nhour * (ncore * pricing.rivanna_375.SU_CPU_hr + tmem * pricing.rivanna_375.SU_GB_hr);
+			aftonCost = nhour * (ncore * pricing.afton_standard.SU_CPU_hr + tmem * pricing.afton_standard.SU_GB_hr);
 	}
-	return [ su_A, su_R ];
+
+	return { Afton_Cost: aftonCost, Rivanna_Cost: rivannaCost };
 }
 
 ScriptGen.prototype.init = function() {
