@@ -32,6 +32,14 @@
         <i>* Rates will take effect January 7, 2024</i>
     </div>
     <script type="text/javascript">
+        //autoscrolling feature for iframes on rc website and ood
+        function sendHeight() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({ type: 'resizeIframe', height: height }, '*');
+        }
+        window.addEventListener('load', sendHeight);
+        window.addEventListener('resize', sendHeight);
+
         var script_gen = new ScriptGen(document.getElementById("jobScriptGenerator"));
 
         script_gen.settings.partitions = {
@@ -48,7 +56,7 @@
         }
         
         script_gen.init();
-    </script>
+    </script>    
 </div>
 <br><br><br>
 </body>
