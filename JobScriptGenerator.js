@@ -199,11 +199,6 @@ ScriptGen.prototype.createForm = function(doc) {
 	gpu_label.style.display = "none";
 	form.appendChild(gpu_label);	
 
-	// Memory per processor core
-	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 1, size: 6, class: "input_mem", id: "mem_per_core"});
-	this.inputs.mem_units = this.newSelect({id: "mem_units", options: [["GB", "GB"], ["MB", "MB"]]});
-	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan("total_mem", this.inputs.mem_per_core, this.inputs.mem_units)));
-
 	// Walltime
 	this.inputs.wallhours = this.newElement("text", {value: "1", size: 2, maxLength: 2, id: "wallhours"});
 	this.inputs.wallmins = this.newElement("text", {value: "00", size: 2, maxLength: 2, id: "wallmins"});
@@ -218,12 +213,17 @@ ScriptGen.prototype.createForm = function(doc) {
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
 	// Cluster
-	this.inputs.cluster = this.newSelect({id: "cluster_select", options: [["Default", "Default"], ["Rivanna", "Rivanna"], ["Afton", "Afton"]]});
+	this.inputs.cluster = this.newSelect({id: "cluster_select", options: [["Default", ""], ["Rivanna", "Rivanna"], ["Afton", "Afton"]]});
 	form.appendChild(this.createLabelInputPair("Cluster: ", this.newSpan(null, this.inputs.cluster)));
 
 	// Other slurm options
 	this.inputs.other_options = this.newElement("checkbox", {id: "other_options", checked: 0});
 	form.appendChild(this.createLabelInputPair("Show additional SLURM options: ", this.inputs.other_options));
+
+	// Memory per processor core
+	this.inputs.mem_per_core = this.newElement("text", {type: "number", value: 0, size: 6, class: "input_mem", id: "mem_per_core"});
+	this.inputs.mem_units = this.newSelect({id: "mem_units", options: [["GB", "GB"], ["MB", "MB"]]});
+	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan("total_mem", this.inputs.mem_per_core, this.inputs.mem_units)));
 
 	// Custom Command
 	this.inputs.custom_command = this.newElement("text", {type: "text", value: "", name: "custom_command"});
@@ -238,9 +238,11 @@ ScriptGen.prototype.createForm = function(doc) {
 
 ScriptGen.prototype.updateVisibility = function(event){	
 	// update advanced options visibility
+	var totalMem = document.getElementById("Total Memory");
 	var customCommand = document.getElementById("Custom Command");
 	var requeueable = document.getElementById("Job is requeueable");
 	var showAdvanced = this.inputs.other_options.checked;
+	totalMem.style.display = showAdvanced ? 'block' : 'none';
 	customCommand.style.display = showAdvanced ? 'block' : 'none';
 	requeueable.style.display = showAdvanced ? 'block' : 'none';
 
@@ -285,7 +287,7 @@ ScriptGen.prototype.updateVisibility = function(event){
 	}
 	if (!showCluster) {
 		var clusterSelect = document.getElementById("cluster_select");
-		clusterSelect.value = "Default";
+		clusterSelect.value = "";
 	}
 	if (!showAdvanced) {
 		var customCommandInput = document.getElementsByName("custom_command")[0];
@@ -329,12 +331,12 @@ ScriptGen.prototype.updateVisibility = function(event){
 		case "parallel":
 			numTasksInputs.value = Math.min(numTasksInputs.value, 6000); // Ensure tasks_per_node does not exceed 6000
 			numNodesInputs.value = Math.max(2, Math.min(numNodesInputs.value, 64)); // Ensure num_nodes is between 2 and 64
-			clusterSelect.value = "Default";
+			clusterSelect.value = "";
 			break;
 		case "gpu":
 			numGPUsInputs.value = Math.min(numGPUsInputs.value, 32); // Ensure gpus does not exceed 32
 			numNodesInputs.value = Math.min(numNodesInputs.value, 4); // Ensure num_nodes does not exceed 4
-			clusterSelect.value = "Default";
+			clusterSelect.value = "";
 			break;
 	}
 
@@ -517,13 +519,13 @@ ScriptGen.prototype.generateSLURMScript = function () {
 
 	if(this.values.partitions.length > 0) {
 		var partitions = this.values.partitions.join(",");
-		sbatch("--partition " + partitions + "   # partition");
+		sbatch("--partition=" + partitions + "   # partition");
 	}
 
-	if (this.inputs.num_nodes.value == 1) {
+	if (this.inputs.num_nodes.value == 1 && this.inputs.mem_per_core.value > 0) {
 		sbatch("--mem=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory");
 	} else {
-		sbatch("--mem-per-cpu=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory per CPU core");	
+		// sbatch("--mem-per-cpu=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory per CPU core");	
 	}
 
 	if(this.inputs.job_name.value && this.inputs.job_name.value != "") {
@@ -543,7 +545,7 @@ ScriptGen.prototype.generateSLURMScript = function () {
 	if(!this.inputs.requeue.checked)
 		sbatch("--no-requeue   # prevents job returning to queue after node failure");
 
-	if(this.values.cluster != "default") {
+	if(this.values.cluster != "") {
 		sbatch("--constraint=" + this.values.cluster + "   # cluster");
 	}
 
