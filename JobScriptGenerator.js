@@ -387,8 +387,7 @@ ScriptGen.prototype.retrieveValues = function() {
 	this.values.sendemail.abort = this.inputs.email_abort.checked;
 	this.values.email_address = this.inputs.email_address.value;
 
-	this.values.cluster = this.inputs.cluster.options[this.inputs.cluster.selectedIndex].text.toLowerCase();
-
+	this.values.cluster = this.inputs.cluster?.options[this.inputs.cluster.selectedIndex]?.text.toLowerCase() ?? '';
 	this.values.custom_command = this.inputs.custom_command.value;
 
 	// Check if values are valid
