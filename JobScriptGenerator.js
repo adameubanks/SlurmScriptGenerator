@@ -544,7 +544,7 @@ ScriptGen.prototype.generateSLURMScript = function () {
 	if(!this.inputs.requeue.checked)
 		sbatch("--no-requeue   # prevents job returning to queue after node failure");
 
-	if(this.values.cluster != "") {
+	if(this.values.cluster != "" && this.values.partitions[0] != "parallel") {
 		sbatch("--constraint=" + this.values.cluster + "   # cluster");
 	}
 
